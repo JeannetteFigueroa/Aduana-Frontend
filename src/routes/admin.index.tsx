@@ -93,7 +93,7 @@ function Dashboard() {
             {distribucionNacionalidad.map((d, i) => (
               <li key={d.name} className="flex items-center justify-between">
                 <span className="flex items-center gap-2"><span className="h-2 w-2 rounded-full" style={{ background: COLORS[i] }} />{d.name}</span>
-                <span className="font-medium">{d.value.toLocaleString()}</span>
+                <span className="font-medium">{d.value.toLocaleString("es-CL")}</span>
               </li>
             ))}
           </ul>
