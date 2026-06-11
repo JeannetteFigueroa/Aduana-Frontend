@@ -9,38 +9,164 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ViajeroRouteImport } from './routes/viajero'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminViajeroRouteImport } from './routes/admin.viajero'
+import { Route as AdminValidacionesRouteImport } from './routes/admin.validaciones'
+import { Route as AdminReportesRouteImport } from './routes/admin.reportes'
+import { Route as AdminPermisosRouteImport } from './routes/admin.permisos'
+import { Route as AdminDeclaracionRouteImport } from './routes/admin.declaracion'
+import { Route as AdminAlertasRouteImport } from './routes/admin.alertas'
 
+const ViajeroRoute = ViajeroRouteImport.update({
+  id: '/viajero',
+  path: '/viajero',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminViajeroRoute = AdminViajeroRouteImport.update({
+  id: '/viajero',
+  path: '/viajero',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminValidacionesRoute = AdminValidacionesRouteImport.update({
+  id: '/validaciones',
+  path: '/validaciones',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminReportesRoute = AdminReportesRouteImport.update({
+  id: '/reportes',
+  path: '/reportes',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminPermisosRoute = AdminPermisosRouteImport.update({
+  id: '/permisos',
+  path: '/permisos',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminDeclaracionRoute = AdminDeclaracionRouteImport.update({
+  id: '/declaracion',
+  path: '/declaracion',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAlertasRoute = AdminAlertasRouteImport.update({
+  id: '/alertas',
+  path: '/alertas',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/viajero': typeof ViajeroRoute
+  '/admin/alertas': typeof AdminAlertasRoute
+  '/admin/declaracion': typeof AdminDeclaracionRoute
+  '/admin/permisos': typeof AdminPermisosRoute
+  '/admin/reportes': typeof AdminReportesRoute
+  '/admin/validaciones': typeof AdminValidacionesRoute
+  '/admin/viajero': typeof AdminViajeroRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/viajero': typeof ViajeroRoute
+  '/admin/alertas': typeof AdminAlertasRoute
+  '/admin/declaracion': typeof AdminDeclaracionRoute
+  '/admin/permisos': typeof AdminPermisosRoute
+  '/admin/reportes': typeof AdminReportesRoute
+  '/admin/validaciones': typeof AdminValidacionesRoute
+  '/admin/viajero': typeof AdminViajeroRoute
+  '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/viajero': typeof ViajeroRoute
+  '/admin/alertas': typeof AdminAlertasRoute
+  '/admin/declaracion': typeof AdminDeclaracionRoute
+  '/admin/permisos': typeof AdminPermisosRoute
+  '/admin/reportes': typeof AdminReportesRoute
+  '/admin/validaciones': typeof AdminValidacionesRoute
+  '/admin/viajero': typeof AdminViajeroRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/viajero'
+    | '/admin/alertas'
+    | '/admin/declaracion'
+    | '/admin/permisos'
+    | '/admin/reportes'
+    | '/admin/validaciones'
+    | '/admin/viajero'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/viajero'
+    | '/admin/alertas'
+    | '/admin/declaracion'
+    | '/admin/permisos'
+    | '/admin/reportes'
+    | '/admin/validaciones'
+    | '/admin/viajero'
+    | '/admin'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/viajero'
+    | '/admin/alertas'
+    | '/admin/declaracion'
+    | '/admin/permisos'
+    | '/admin/reportes'
+    | '/admin/validaciones'
+    | '/admin/viajero'
+    | '/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
+  ViajeroRoute: typeof ViajeroRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/viajero': {
+      id: '/viajero'
+      path: '/viajero'
+      fullPath: '/viajero'
+      preLoaderRoute: typeof ViajeroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +174,84 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/viajero': {
+      id: '/admin/viajero'
+      path: '/viajero'
+      fullPath: '/admin/viajero'
+      preLoaderRoute: typeof AdminViajeroRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/validaciones': {
+      id: '/admin/validaciones'
+      path: '/validaciones'
+      fullPath: '/admin/validaciones'
+      preLoaderRoute: typeof AdminValidacionesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/reportes': {
+      id: '/admin/reportes'
+      path: '/reportes'
+      fullPath: '/admin/reportes'
+      preLoaderRoute: typeof AdminReportesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/permisos': {
+      id: '/admin/permisos'
+      path: '/permisos'
+      fullPath: '/admin/permisos'
+      preLoaderRoute: typeof AdminPermisosRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/declaracion': {
+      id: '/admin/declaracion'
+      path: '/declaracion'
+      fullPath: '/admin/declaracion'
+      preLoaderRoute: typeof AdminDeclaracionRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/alertas': {
+      id: '/admin/alertas'
+      path: '/alertas'
+      fullPath: '/admin/alertas'
+      preLoaderRoute: typeof AdminAlertasRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
+interface AdminRouteChildren {
+  AdminAlertasRoute: typeof AdminAlertasRoute
+  AdminDeclaracionRoute: typeof AdminDeclaracionRoute
+  AdminPermisosRoute: typeof AdminPermisosRoute
+  AdminReportesRoute: typeof AdminReportesRoute
+  AdminValidacionesRoute: typeof AdminValidacionesRoute
+  AdminViajeroRoute: typeof AdminViajeroRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminAlertasRoute: AdminAlertasRoute,
+  AdminDeclaracionRoute: AdminDeclaracionRoute,
+  AdminPermisosRoute: AdminPermisosRoute,
+  AdminReportesRoute: AdminReportesRoute,
+  AdminValidacionesRoute: AdminValidacionesRoute,
+  AdminViajeroRoute: AdminViajeroRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
+  ViajeroRoute: ViajeroRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
