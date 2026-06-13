@@ -562,10 +562,9 @@ function DocumentosPanel() {
   const triggerFile = (id: DocId) => inputsRef.current[id]?.click();
 
   const handleFile = (id: DocId, file: File) => {
-    // Lectura local del archivo SOLO para mostrar preview en la UI (no se sube a ningún servidor).
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const preview = file.type.startsWith("image/") ? (e.target?.result as string) : undefined;
+    // Lectura local del archivo SOLO para mostrar preview en la UI (no se sube a ningún servidor todavía).
+    // @backend: aquí se reemplaza por POST /api/documentos (multipart) usando el File real.
+    const finish = (preview?: string) => {
       setDocs((d) => d.map((x) => x.id === id
         ? { ...x, estado: "subido", file: { nombre: file.name, tamano: file.size, preview } }
         : x));
@@ -577,8 +576,14 @@ function DocumentosPanel() {
         toast.success(`${DOCS_BASE.find((dd) => dd.id === id)?.nombre} validado`, { description: "Documento aprobado por el sistema." });
       }, 2500);
     };
-    if (file.type.startsWith("image/")) reader.readAsDataURL(file);
-    else { reader.onload?.({ target: {} as FileReader } as ProgressEvent<FileReader>); }
+
+    if (file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onload = (e) => finish(e.target?.result as string);
+      reader.readAsDataURL(file);
+    } else {
+      finish();
+    }
   };
 
   const eliminar = (id: DocId) => {
