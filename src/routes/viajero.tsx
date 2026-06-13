@@ -1,40 +1,64 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState, type ReactNode, type ComponentType } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useRef, useState, type ReactNode, type ComponentType } from "react";
 import { toast } from "sonner";
 import {
   Mountain, Bell, FileText, MapPin, QrCode, CheckCircle2,
   Clock, ChevronRight, User, ArrowRight, Home as HomeIcon, ScanLine,
   Upload, FileUp, Baby, Car, Plus, X, AlertTriangle, Trash2,
-  Menu, LogOut, ShieldCheck, Calendar, Camera,
+  Menu, LogOut, ShieldCheck, Calendar, Camera, Settings, Lock, Bell as BellIcon, Globe,
+  IdCard, FileCheck, ScanFace, Save, Eye,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getSession, logout, type Session } from "@/lib/auth";
 
 export const Route = createFileRoute("/viajero")({
   head: () => ({ meta: [{ title: "Portal Viajero — Aduanas Chile" }] }),
   component: AppViajero,
 });
 
-type Tab = "home" | "declarar" | "documentos" | "menores" | "vehiculo" | "permiso" | "perfil";
+type Tab = "home" | "datos" | "declarar" | "documentos" | "biometria" | "menores" | "vehiculo" | "permiso" | "perfil";
 
 const navItems: { id: Tab; label: string; icon: ComponentType<{ className?: string }> }[] = [
   { id: "home", label: "Inicio", icon: HomeIcon },
+  { id: "datos", label: "Datos personales", icon: User },
   { id: "declarar", label: "Declaración SAG", icon: FileText },
   { id: "documentos", label: "Documentos", icon: FileUp },
+  { id: "biometria", label: "Validación facial", icon: ScanFace },
   { id: "vehiculo", label: "Vehículo", icon: Car },
   { id: "menores", label: "Menores de edad", icon: Baby },
   { id: "permiso", label: "Mi permiso", icon: QrCode },
-  { id: "perfil", label: "Perfil", icon: User },
+  { id: "perfil", label: "Mi cuenta", icon: Settings },
 ];
 
+/**
+ * Portal del viajero — flujo completo: datos → documentos → biometría → declaración → vehículo → permiso.
+ *
+ * @backend  Cada panel marca con un comentario @backend dónde reemplazar la simulación
+ *           por llamadas a los microservicios. El layout/navegación se queda igual.
+ */
 function AppViajero() {
+  const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>("home");
   const [open, setOpen] = useState(false);
+  const [session, setSession] = useState<Session | null>(null);
+
+  // Guard de sesión — exige viajero logueado
+  useEffect(() => {
+    const s = getSession();
+    if (!s || s.rol !== "viajero") {
+      navigate({ to: "/" });
+      return;
+    }
+    setSession(s);
+  }, [navigate]);
+
+  if (!session) return null;
 
   const go = (t: Tab) => { setTab(t); setOpen(false); };
 
   return (
     <div className="flex min-h-screen bg-muted/20">
-      {/* Sidebar (desktop) / drawer (mobile) */}
+      {/* Sidebar desktop / drawer mobile */}
       <aside className={cn(
         "fixed inset-y-0 left-0 z-40 flex w-72 flex-col bg-sidebar text-sidebar-foreground transition-transform lg:static lg:translate-x-0",
         open ? "translate-x-0" : "-translate-x-full",
@@ -63,9 +87,10 @@ function AppViajero() {
           })}
         </nav>
         <div className="border-t border-sidebar-border p-3">
-          <Link to="/" className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-sidebar-foreground/80 hover:bg-sidebar-accent">
+          <button onClick={() => { logout(); navigate({ to: "/" }); }}
+            className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-sidebar-foreground/80 hover:bg-sidebar-accent">
             <LogOut className="h-4 w-4" /> Cerrar sesión
-          </Link>
+          </button>
         </div>
       </aside>
       {open && <div onClick={() => setOpen(false)} className="fixed inset-0 z-30 bg-black/40 lg:hidden" />}
@@ -85,24 +110,26 @@ function AppViajero() {
               <Bell className="h-5 w-5" />
               <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-destructive" />
             </button>
-            <div className="flex items-center gap-2 rounded-md border bg-background px-2 py-1">
-              <img src="https://i.pravatar.cc/60?img=12" className="h-7 w-7 rounded-full" alt="" />
+            <button onClick={() => go("perfil")} className="flex items-center gap-2 rounded-md border bg-background px-2 py-1 hover:bg-muted">
+              <img src={session.avatar} className="h-7 w-7 rounded-full" alt="" />
               <div className="hidden text-xs sm:block">
-                <div className="font-medium leading-tight">Juan Pérez</div>
+                <div className="font-medium leading-tight">{session.nombre}</div>
                 <div className="text-muted-foreground">Viajero</div>
               </div>
-            </div>
+            </button>
           </div>
         </header>
 
         <main className="flex-1 p-4 sm:p-6">
-          {tab === "home" && <HomePanel go={go} />}
+          {tab === "home" && <HomePanel go={go} session={session} />}
+          {tab === "datos" && <DatosPanel session={session} />}
           {tab === "declarar" && <DeclararPanel />}
           {tab === "documentos" && <DocumentosPanel />}
+          {tab === "biometria" && <BiometriaPanel />}
           {tab === "menores" && <MenoresPanel />}
           {tab === "vehiculo" && <VehiculoPanel />}
-          {tab === "permiso" && <PermisoPanel />}
-          {tab === "perfil" && <PerfilPanel />}
+          {tab === "permiso" && <PermisoPanel session={session} />}
+          {tab === "perfil" && <PerfilPanel session={session} />}
         </main>
       </div>
 
@@ -113,7 +140,7 @@ function AppViajero() {
           ["declarar", FileText, "Declarar"],
           ["documentos", FileUp, "Docs"],
           ["permiso", QrCode, "Permiso"],
-          ["perfil", User, "Perfil"],
+          ["perfil", Settings, "Cuenta"],
         ] as const).map(([id, Icon, label]) => (
           <button key={id} onClick={() => setTab(id)}
             className={cn("flex flex-col items-center gap-0.5 py-2.5 text-[10px] font-medium",
@@ -127,7 +154,7 @@ function AppViajero() {
   );
 }
 
-/* ---------- Reusable ---------- */
+/* ====================== UI helpers ====================== */
 function Card({ children, className }: { children: ReactNode; className?: string }) {
   return <div className={cn("rounded-xl border bg-card p-5 shadow-sm", className)}>{children}</div>;
 }
@@ -139,15 +166,27 @@ function SectionTitle({ title, sub }: { title: string; sub?: string }) {
     </div>
   );
 }
+function Row({ k, v }: { k: string; v: string }) {
+  return <div className="flex justify-between"><dt className="text-muted-foreground">{k}</dt><dd className="font-medium">{v}</dd></div>;
+}
+function Field({ label, value, onChange, type = "text", placeholder, disabled }: { label: string; value: string; onChange?: (v: string) => void; type?: string; placeholder?: string; disabled?: boolean }) {
+  return (
+    <label className="block">
+      <span className="text-sm font-medium">{label}</span>
+      <input type={type} value={value} disabled={disabled} placeholder={placeholder} onChange={(e) => onChange?.(e.target.value)}
+        className="mt-1.5 h-10 w-full rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/50 disabled:bg-muted disabled:text-muted-foreground" />
+    </label>
+  );
+}
 
-/* ---------- Home ---------- */
-function HomePanel({ go }: { go: (t: Tab) => void }) {
+/* ====================== HOME ====================== */
+function HomePanel({ go, session }: { go: (t: Tab) => void; session: Session }) {
   return (
     <div className="space-y-6">
       <div className="gradient-hero relative overflow-hidden rounded-2xl p-6 text-white sm:p-8">
         <div className="relative z-10 max-w-2xl">
           <div className="text-xs uppercase tracking-widest text-white/70">Bienvenido</div>
-          <h1 className="mt-1 text-2xl font-bold sm:text-3xl">Juan Pérez González</h1>
+          <h1 className="mt-1 text-2xl font-bold sm:text-3xl">{session.nombre}</h1>
           <p className="mt-2 text-sm text-white/80 sm:text-base">
             Prepara tu cruce fronterizo en minutos. Declara, sube documentos y obtén tu permiso QR.
           </p>
@@ -161,10 +200,10 @@ function HomePanel({ go }: { go: (t: Tab) => void }) {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <ActionCard onClick={() => go("declarar")} icon={FileText} title="Declaración SAG" desc="Productos vegetales / animales" color="bg-primary/10 text-primary" />
-        <ActionCard onClick={() => go("documentos")} icon={FileUp} title="Subir documentos" desc="Pasaporte, RUT, seguro" color="bg-info/10 text-info" />
-        <ActionCard onClick={() => go("vehiculo")} icon={Car} title="Vehículo" desc="Patente y permiso circulación" color="bg-warning/20 text-warning-foreground" />
-        <ActionCard onClick={() => go("menores")} icon={Baby} title="Menores de edad" desc="Autorización notarial" color="bg-success/10 text-success" />
+        <ActionCard onClick={() => go("datos")} icon={User} title="Datos personales" desc="Información del viajero" color="bg-primary/10 text-primary" />
+        <ActionCard onClick={() => go("documentos")} icon={FileUp} title="Subir documentos" desc="Pasaporte, licencia, seguro" color="bg-info/10 text-info" />
+        <ActionCard onClick={() => go("biometria")} icon={ScanFace} title="Validación facial" desc="Verifica tu identidad" color="bg-success/10 text-success" />
+        <ActionCard onClick={() => go("declarar")} icon={FileText} title="Declaración SAG" desc="Productos vegetales/animales" color="bg-warning/20 text-warning-foreground" />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
@@ -175,20 +214,21 @@ function HomePanel({ go }: { go: (t: Tab) => void }) {
           </div>
           <ol className="mt-4 space-y-3">
             {[
-              ["Datos personales", true],
-              ["Documentos cargados", true],
-              ["Declaración SAG", false],
-              ["Datos vehículo", false],
-              ["Permiso emitido", false],
-            ].map(([label, done], i) => (
+              ["Datos personales", true, "datos"],
+              ["Documentos cargados", true, "documentos"],
+              ["Validación facial", false, "biometria"],
+              ["Declaración SAG", false, "declarar"],
+              ["Datos vehículo", false, "vehiculo"],
+              ["Permiso emitido", false, "permiso"],
+            ].map(([label, done, target], i) => (
               <li key={i} className="flex items-center gap-3">
                 <span className={cn("grid h-7 w-7 shrink-0 place-items-center rounded-full text-xs font-bold",
                   done ? "bg-success text-success-foreground" : "bg-muted text-muted-foreground")}>
                   {done ? "✓" : i + 1}
                 </span>
-                <span className={cn("text-sm", done ? "font-medium" : "text-muted-foreground")}>{label}</span>
-                {!done && i === 2 && (
-                  <button onClick={() => go("declarar")} className="ml-auto text-xs font-semibold text-primary hover:underline">Completar →</button>
+                <span className={cn("text-sm", done ? "font-medium" : "text-muted-foreground")}>{label as string}</span>
+                {!done && (
+                  <button onClick={() => go(target as Tab)} className="ml-auto text-xs font-semibold text-primary hover:underline">Completar →</button>
                 )}
               </li>
             ))}
@@ -211,7 +251,7 @@ function HomePanel({ go }: { go: (t: Tab) => void }) {
     </div>
   );
 }
-function ActionCard({ onClick, icon: Icon, title, desc, color }: any) {
+function ActionCard({ onClick, icon: Icon, title, desc, color }: { onClick: () => void; icon: ComponentType<{ className?: string }>; title: string; desc: string; color: string }) {
   return (
     <button onClick={onClick} className="group flex items-start gap-3 rounded-xl border bg-card p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
       <div className={cn("grid h-11 w-11 shrink-0 place-items-center rounded-lg", color)}>
@@ -225,11 +265,109 @@ function ActionCard({ onClick, icon: Icon, title, desc, color }: any) {
     </button>
   );
 }
-function Row({ k, v }: { k: string; v: string }) {
-  return <div className="flex justify-between"><dt className="text-muted-foreground">{k}</dt><dd className="font-medium">{v}</dd></div>;
+
+/* ====================== DATOS PERSONALES (formulario completo) ====================== */
+/**
+ * @backend  PUT /api/viajeros/{id}  con todos los datos del formulario.
+ */
+function DatosPanel({ session }: { session: Session }) {
+  const [form, setForm] = useState({
+    nombres: session.nombre.split(" ").slice(0, 2).join(" "),
+    apellidos: session.nombre.split(" ").slice(2).join(" "),
+    rut: session.rut ?? "",
+    email: session.email,
+    telefono: "+56 9 9876 5432",
+    nacionalidad: "Chile",
+    fechaNacimiento: "1988-05-12",
+    sexo: "Masculino",
+    estadoCivil: "Soltero/a",
+    direccion: "Av. Apoquindo 1234, Las Condes",
+    ciudad: "Santiago",
+    profesion: "Ingeniero",
+    contactoEmergenciaNombre: "María Pérez",
+    contactoEmergenciaTel: "+56 9 1234 5678",
+    motivoViaje: "Turismo",
+  });
+  const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
+
+  return (
+    <div>
+      <SectionTitle title="Datos personales" sub="Información del viajero — usada para validar tu identidad en frontera." />
+      <form onSubmit={(e) => { e.preventDefault(); toast.success("Datos guardados", { description: "Se sincronizarán con tu permiso de cruce." }); }} className="space-y-4">
+        <Card>
+          <h3 className="font-semibold">Información básica</h3>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <Field label="Nombres *" value={form.nombres} onChange={(v) => set("nombres", v)} />
+            <Field label="Apellidos *" value={form.apellidos} onChange={(v) => set("apellidos", v)} />
+            <Field label="RUT / DNI *" value={form.rut} onChange={(v) => set("rut", v)} />
+            <Field label="Fecha de nacimiento *" type="date" value={form.fechaNacimiento} onChange={(v) => set("fechaNacimiento", v)} />
+            <div>
+              <label className="text-sm font-medium">Sexo</label>
+              <select value={form.sexo} onChange={(e) => set("sexo", e.target.value)}
+                className="mt-1.5 h-10 w-full rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/50">
+                <option>Masculino</option><option>Femenino</option><option>Otro</option><option>Prefiero no decir</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium">Nacionalidad</label>
+              <select value={form.nacionalidad} onChange={(e) => set("nacionalidad", e.target.value)}
+                className="mt-1.5 h-10 w-full rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/50">
+                <option>Chile</option><option>Argentina</option><option>Perú</option><option>Bolivia</option><option>Brasil</option><option>Otra</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium">Estado civil</label>
+              <select value={form.estadoCivil} onChange={(e) => set("estadoCivil", e.target.value)}
+                className="mt-1.5 h-10 w-full rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/50">
+                <option>Soltero/a</option><option>Casado/a</option><option>Divorciado/a</option><option>Viudo/a</option><option>Conviviente civil</option>
+              </select>
+            </div>
+            <Field label="Profesión / Oficio" value={form.profesion} onChange={(v) => set("profesion", v)} />
+          </div>
+        </Card>
+
+        <Card>
+          <h3 className="font-semibold">Contacto</h3>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <Field label="Correo electrónico" type="email" value={form.email} disabled />
+            <Field label="Teléfono *" value={form.telefono} onChange={(v) => set("telefono", v)} />
+            <Field label="Dirección" value={form.direccion} onChange={(v) => set("direccion", v)} />
+            <Field label="Ciudad" value={form.ciudad} onChange={(v) => set("ciudad", v)} />
+          </div>
+        </Card>
+
+        <Card>
+          <h3 className="font-semibold">Contacto de emergencia</h3>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <Field label="Nombre" value={form.contactoEmergenciaNombre} onChange={(v) => set("contactoEmergenciaNombre", v)} />
+            <Field label="Teléfono" value={form.contactoEmergenciaTel} onChange={(v) => set("contactoEmergenciaTel", v)} />
+          </div>
+        </Card>
+
+        <Card>
+          <h3 className="font-semibold">Motivo del viaje</h3>
+          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {["Turismo", "Trabajo", "Estudios", "Visita familiar", "Tránsito", "Negocios", "Salud", "Otro"].map((m) => (
+              <button type="button" key={m} onClick={() => set("motivoViaje", m)}
+                className={cn("rounded-md border px-3 py-2 text-sm transition-colors",
+                  form.motivoViaje === m ? "border-primary bg-primary/5 font-semibold" : "hover:bg-muted")}>
+                {m}
+              </button>
+            ))}
+          </div>
+        </Card>
+
+        <div className="flex justify-end">
+          <button type="submit" className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90">
+            <Save className="h-4 w-4" /> Guardar datos
+          </button>
+        </div>
+      </form>
+    </div>
+  );
 }
 
-/* ---------- Declaración SAG ---------- */
+/* ====================== DECLARACIÓN SAG ====================== */
 const categorias = [
   { id: "frutas", label: "Frutas frescas", emoji: "🍎" },
   { id: "carnes", label: "Carnes / embutidos", emoji: "🥩" },
@@ -241,6 +379,10 @@ const categorias = [
   { id: "ninguno", label: "No transporto nada", emoji: "🚫" },
 ];
 
+/**
+ * @backend  POST /api/sag/declaracion  { categorias, items[] }
+ *           → devuelve folio + estado (aprobada / requiere inspección / rechazada).
+ */
 function DeclararPanel() {
   const [step, setStep] = useState(1);
   const [sel, setSel] = useState<string[]>([]);
@@ -248,9 +390,9 @@ function DeclararPanel() {
 
   const toggle = (id: string) => {
     if (id === "ninguno") { setSel(["ninguno"]); setItems([]); return; }
-    setSel(s => {
-      const next = s.filter(x => x !== "ninguno");
-      return next.includes(id) ? next.filter(x => x !== id) : [...next, id];
+    setSel((s) => {
+      const next = s.filter((x) => x !== "ninguno");
+      return next.includes(id) ? next.filter((x) => x !== id) : [...next, id];
     });
   };
 
@@ -269,7 +411,6 @@ function DeclararPanel() {
     <div>
       <SectionTitle title="Declaración SAG digital" sub="Servicio Agrícola y Ganadero · Obligatorio según Ley 18.755" />
 
-      {/* Stepper */}
       <div className="mb-6 flex items-center gap-2 overflow-x-auto pb-2">
         {["Categorías", "Detalle productos", "Confirmación"].map((s, i) => (
           <div key={s} className="flex items-center gap-2">
@@ -288,7 +429,7 @@ function DeclararPanel() {
           <h3 className="font-semibold">¿Qué productos transportas?</h3>
           <p className="text-sm text-muted-foreground">Selecciona todas las categorías aplicables.</p>
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            {categorias.map(c => {
+            {categorias.map((c) => {
               const on = sel.includes(c.id);
               return (
                 <button key={c.id} onClick={() => toggle(c.id)}
@@ -303,10 +444,7 @@ function DeclararPanel() {
           </div>
           <div className="mt-5 flex justify-end">
             <button disabled={sel.length === 0}
-              onClick={() => {
-                if (sel.includes("ninguno")) { enviar(); return; }
-                setStep(2);
-              }}
+              onClick={() => { if (sel.includes("ninguno")) { enviar(); return; } setStep(2); }}
               className="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50">
               Continuar →
             </button>
@@ -333,7 +471,7 @@ function DeclararPanel() {
                   Sin productos agregados. Pulsa <span className="font-medium text-foreground">"Agregar"</span> para comenzar.
                 </div>
               )}
-              {items.map(it => (
+              {items.map((it) => (
                 <div key={it.id} className="grid grid-cols-1 gap-2 rounded-md border bg-background p-3 sm:grid-cols-[2fr_1fr_1fr_auto]">
                   <input defaultValue={it.nombre} placeholder="Ej: Manzanas Gala"
                     className="h-9 rounded-md border bg-card px-3 text-sm outline-none focus:ring-2 focus:ring-ring/50" />
@@ -341,7 +479,7 @@ function DeclararPanel() {
                     className="h-9 rounded-md border bg-card px-3 text-sm outline-none focus:ring-2 focus:ring-ring/50" />
                   <input defaultValue={it.origen} placeholder="País origen"
                     className="h-9 rounded-md border bg-card px-3 text-sm outline-none focus:ring-2 focus:ring-ring/50" />
-                  <button onClick={() => setItems(items.filter(x => x.id !== it.id))}
+                  <button onClick={() => setItems(items.filter((x) => x.id !== it.id))}
                     className="grid h-9 w-9 place-items-center rounded-md border hover:bg-destructive/10 hover:text-destructive">
                     <X className="h-4 w-4" />
                   </button>
@@ -390,77 +528,164 @@ function DeclararPanel() {
   );
 }
 
-/* ---------- Documentos ---------- */
-type Doc = { id: string; nombre: string; tipo: string; estado: "pendiente" | "subido" | "validado" | "rechazado"; size?: string };
-function DocumentosPanel() {
-  const [docs, setDocs] = useState<Doc[]>([
-    { id: "d1", nombre: "Pasaporte", tipo: "PDF/IMG", estado: "validado", size: "1.2 MB" },
-    { id: "d2", nombre: "Cédula de identidad", tipo: "PDF/IMG", estado: "subido", size: "820 KB" },
-    { id: "d3", nombre: "Seguro internacional", tipo: "PDF", estado: "pendiente" },
-    { id: "d4", nombre: "Permiso de circulación", tipo: "PDF", estado: "pendiente" },
-  ]);
+/* ====================== DOCUMENTOS ====================== */
+type DocId = "carnet" | "pasaporte" | "antecedentes" | "licencia" | "padron" | "seguro" | "permisoCirc";
+type Doc = {
+  id: DocId; nombre: string; descripcion: string; obligatorio: boolean;
+  icon: ComponentType<{ className?: string }>; aceptaTipos: string;
+  estado: "pendiente" | "subido" | "validado" | "rechazado";
+  file?: { nombre: string; tamano: number; preview?: string };
+};
 
-  const subir = (id: string) => {
-    toast.loading("Subiendo documento...", { id });
-    setTimeout(() => {
-      setDocs(d => d.map(x => x.id === id ? { ...x, estado: "subido", size: `${(Math.random() * 2 + 0.5).toFixed(1)} MB` } : x));
-      toast.success("Documento cargado", { id, description: "En revisión por el operador." });
-    }, 1200);
+const DOCS_BASE: Doc[] = [
+  { id: "carnet",       nombre: "Cédula de identidad / DNI", descripcion: "Frontal y reverso", obligatorio: true, icon: IdCard, aceptaTipos: "image/*,.pdf", estado: "pendiente" },
+  { id: "pasaporte",    nombre: "Pasaporte",                 descripcion: "Página de datos personales", obligatorio: true, icon: IdCard, aceptaTipos: "image/*,.pdf", estado: "pendiente" },
+  { id: "antecedentes", nombre: "Certificado de antecedentes", descripcion: "Vigencia máxima 30 días", obligatorio: true, icon: FileCheck, aceptaTipos: ".pdf", estado: "pendiente" },
+  { id: "licencia",     nombre: "Licencia de conducir",      descripcion: "Vigente y clase apropiada", obligatorio: false, icon: IdCard, aceptaTipos: "image/*,.pdf", estado: "pendiente" },
+  { id: "padron",       nombre: "Padrón del vehículo",       descripcion: "Documento de propiedad", obligatorio: false, icon: FileText, aceptaTipos: "image/*,.pdf", estado: "pendiente" },
+  { id: "permisoCirc",  nombre: "Permiso de circulación",    descripcion: "Vigente al año en curso", obligatorio: false, icon: FileText, aceptaTipos: "image/*,.pdf", estado: "pendiente" },
+  { id: "seguro",       nombre: "Seguro responsabilidad civil internacional", descripcion: "Cobertura para Chile y Argentina", obligatorio: false, icon: ShieldCheck, aceptaTipos: ".pdf", estado: "pendiente" },
+];
+
+/**
+ * Panel de carga de documentos.
+ *
+ * @backend  Cada `subirArchivo` debe convertirse en:
+ *           POST /api/documentos  (multipart/form-data, field name="archivo", + viajeroId, tipoDoc)
+ *           Luego un microservicio de OCR/validación marca el documento como "validado" o "rechazado"
+ *           y se actualiza vía WebSocket o polling.
+ */
+function DocumentosPanel() {
+  const [docs, setDocs] = useState<Doc[]>(DOCS_BASE);
+  const inputsRef = useRef<Record<string, HTMLInputElement | null>>({});
+
+  const triggerFile = (id: DocId) => inputsRef.current[id]?.click();
+
+  const handleFile = (id: DocId, file: File) => {
+    // Lectura local del archivo SOLO para mostrar preview en la UI (no se sube a ningún servidor todavía).
+    // @backend: aquí se reemplaza por POST /api/documentos (multipart) usando el File real.
+    const finish = (preview?: string) => {
+      setDocs((d) => d.map((x) => x.id === id
+        ? { ...x, estado: "subido", file: { nombre: file.name, tamano: file.size, preview } }
+        : x));
+      toast.success(`"${file.name}" cargado`, { description: "En revisión por el operador." });
+
+      // 🎬 Simulación de validación automática a los 2.5s
+      setTimeout(() => {
+        setDocs((d) => d.map((x) => x.id === id ? { ...x, estado: "validado" } : x));
+        toast.success(`${DOCS_BASE.find((dd) => dd.id === id)?.nombre} validado`, { description: "Documento aprobado por el sistema." });
+      }, 2500);
+    };
+
+    if (file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onload = (e) => finish(e.target?.result as string);
+      reader.readAsDataURL(file);
+    } else {
+      finish();
+    }
   };
+
+  const eliminar = (id: DocId) => {
+    setDocs((d) => d.map((x) => x.id === id ? { ...x, estado: "pendiente", file: undefined } : x));
+    toast.info("Documento eliminado");
+  };
+
+  const obligatorios = docs.filter((d) => d.obligatorio);
+  const completos = obligatorios.filter((d) => d.estado === "validado").length;
 
   return (
     <div>
-      <SectionTitle title="Documentos del viajero" sub="Sube tus documentos en PDF, JPG o PNG. Máx. 10 MB por archivo." />
-      <div className="grid gap-3">
-        {docs.map(d => (
-          <Card key={d.id} className="!p-4">
-            <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4">
-              <div className={cn("grid h-12 w-12 shrink-0 place-items-center rounded-lg",
-                d.estado === "validado" ? "bg-success/15 text-success" :
-                d.estado === "subido" ? "bg-info/15 text-info" :
-                d.estado === "rechazado" ? "bg-destructive/15 text-destructive" :
-                "bg-muted text-muted-foreground")}>
-                <FileText className="h-6 w-6" />
-              </div>
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-semibold">{d.nombre}</span>
-                  <Badge estado={d.estado} />
-                </div>
-                <div className="text-xs text-muted-foreground">{d.tipo} {d.size && `· ${d.size}`}</div>
-              </div>
-              <div className="flex gap-2">
-                {d.estado === "pendiente" ? (
-                  <button onClick={() => subir(d.id)}
-                    className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90">
-                    <Upload className="h-3.5 w-3.5" /> Subir
-                  </button>
-                ) : (
-                  <button onClick={() => setDocs(docs.map(x => x.id === d.id ? { ...x, estado: "pendiente", size: undefined } : x))}
-                    className="grid h-9 w-9 place-items-center rounded-md border hover:bg-destructive/10 hover:text-destructive">
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                )}
-              </div>
-            </div>
-          </Card>
-        ))}
+      <SectionTitle title="Documentos del viajero" sub="Sube tus documentos en PDF o imagen (máx. 10 MB por archivo)." />
+
+      <div className="mb-4 rounded-xl border bg-card p-4 shadow-sm">
+        <div className="flex items-center justify-between gap-2">
+          <div>
+            <div className="text-sm font-semibold">Progreso de documentos obligatorios</div>
+            <div className="text-xs text-muted-foreground">{completos} de {obligatorios.length} validados</div>
+          </div>
+          <div className="text-2xl font-bold text-primary">{Math.round((completos / obligatorios.length) * 100)}%</div>
+        </div>
+        <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
+          <div className="h-full bg-primary transition-all" style={{ width: `${(completos / obligatorios.length) * 100}%` }} />
+        </div>
       </div>
 
-      <Card className="mt-4 border-dashed">
-        <div className="flex flex-col items-center justify-center py-6 text-center sm:py-10">
-          <div className="grid h-14 w-14 place-items-center rounded-full bg-primary/10 text-primary">
-            <Upload className="h-7 w-7" />
+      <div className="grid gap-3">
+        {docs.map((d) => {
+          const Icon = d.icon;
+          return (
+            <Card key={d.id} className="!p-4">
+              {/* Input file oculto — se dispara al hacer click en "Subir" */}
+              <input
+                type="file"
+                accept={d.aceptaTipos}
+                className="hidden"
+                ref={(el) => { inputsRef.current[d.id] = el; }}
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) handleFile(d.id, f);
+                  e.target.value = ""; // permite re-subir el mismo archivo
+                }}
+              />
+              <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4">
+                <div className={cn("grid h-14 w-14 shrink-0 place-items-center rounded-lg",
+                  d.estado === "validado" ? "bg-success/15 text-success" :
+                  d.estado === "subido" ? "bg-info/15 text-info" :
+                  d.estado === "rechazado" ? "bg-destructive/15 text-destructive" :
+                  "bg-muted text-muted-foreground")}>
+                  {d.file?.preview
+                    ? <img src={d.file.preview} alt="" className="h-full w-full rounded-lg object-cover" />
+                    : <Icon className="h-6 w-6" />}
+                </div>
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-semibold">{d.nombre}</span>
+                    {d.obligatorio && <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-[10px] font-bold text-destructive">OBLIGATORIO</span>}
+                    <Badge estado={d.estado} />
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {d.descripcion}
+                    {d.file && <span className="ml-2">· {d.file.nombre} · {(d.file.tamano / 1024).toFixed(0)} KB</span>}
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  {d.estado === "pendiente" || d.estado === "rechazado" ? (
+                    <button onClick={() => triggerFile(d.id)}
+                      className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90">
+                      <Upload className="h-3.5 w-3.5" /> Subir
+                    </button>
+                  ) : (
+                    <>
+                      {d.file?.preview && (
+                        <button onClick={() => window.open(d.file?.preview, "_blank")}
+                          className="grid h-9 w-9 place-items-center rounded-md border hover:bg-muted">
+                          <Eye className="h-4 w-4" />
+                        </button>
+                      )}
+                      <button onClick={() => triggerFile(d.id)} className="grid h-9 w-9 place-items-center rounded-md border hover:bg-muted">
+                        <Upload className="h-4 w-4" />
+                      </button>
+                      <button onClick={() => eliminar(d.id)}
+                        className="grid h-9 w-9 place-items-center rounded-md border hover:bg-destructive/10 hover:text-destructive">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </Card>
+          );
+        })}
+      </div>
+
+      <Card className="mt-4 bg-info/5">
+        <div className="flex items-start gap-3">
+          <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-info" />
+          <div className="text-sm text-muted-foreground">
+            <p className="font-semibold text-foreground">Privacidad de tus datos</p>
+            <p className="mt-1">Tus documentos solo serán consultados por las autoridades correspondientes (PDI, SAG, Aduanas) durante el proceso de cruce. Se almacenan cifrados y se eliminan según la política de retención del servicio.</p>
           </div>
-          <h4 className="mt-3 font-semibold">Subir otro documento</h4>
-          <p className="text-sm text-muted-foreground">Arrastra el archivo aquí o haz click para seleccionar.</p>
-          <button onClick={() => {
-            const id = `d${Date.now()}`;
-            setDocs([...docs, { id, nombre: "Documento adicional", tipo: "PDF", estado: "pendiente" }]);
-            toast.info("Documento agregado a la lista");
-          }} className="mt-4 inline-flex items-center gap-2 rounded-md border bg-card px-4 py-2 text-sm font-medium hover:bg-muted">
-            <Plus className="h-4 w-4" /> Agregar documento
-          </button>
         </div>
       </Card>
     </div>
@@ -477,7 +702,125 @@ function Badge({ estado }: { estado: string }) {
   return <span className={cn("rounded-full px-2 py-0.5 text-[11px] font-semibold capitalize", map[estado])}>{estado}</span>;
 }
 
-/* ---------- Menores ---------- */
+/* ====================== VALIDACIÓN FACIAL (simulación) ====================== */
+/**
+ * @backend  Esta pantalla debe integrarse con un microservicio de biometría:
+ *           POST /api/biometria/captura  (imagen del rostro en base64)
+ *           → devuelve { match: boolean, score: number, vivienciaOk: boolean }
+ *           Se compara contra la foto del carnet o pasaporte previamente subido.
+ *
+ *           En producción usar getUserMedia() para abrir la cámara real.
+ *           Aquí solo simulamos el flujo: capturando → analizando → resultado.
+ */
+function BiometriaPanel() {
+  type Estado = "inicial" | "capturando" | "analizando" | "ok" | "fallo";
+  const [estado, setEstado] = useState<Estado>("inicial");
+  const [score, setScore] = useState<number | null>(null);
+
+  const iniciar = () => {
+    setEstado("capturando");
+    setTimeout(() => {
+      setEstado("analizando");
+      toast.loading("Analizando rostro contra documento de identidad...", { id: "bio" });
+      setTimeout(() => {
+        const s = Math.floor(95 + Math.random() * 5);
+        setScore(s);
+        setEstado("ok");
+        toast.success(`Validación facial exitosa — ${s}% match`, { id: "bio", description: "Tu identidad ha sido confirmada." });
+      }, 2200);
+    }, 2000);
+  };
+
+  const reintentar = () => { setEstado("inicial"); setScore(null); };
+
+  return (
+    <div>
+      <SectionTitle title="Validación facial" sub="Verificamos que seas la misma persona del documento subido." />
+
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <Card>
+          <div className="relative mx-auto aspect-square w-full max-w-md overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+            {/* Marco circular */}
+            <div className="absolute inset-8 rounded-full border-4 border-dashed border-white/30" />
+            {(estado === "capturando" || estado === "analizando") && (
+              <div className="absolute inset-8 animate-pulse rounded-full border-4 border-primary shadow-[0_0_40px_rgba(59,130,246,0.5)]" />
+            )}
+
+            <div className="absolute inset-0 grid place-items-center text-center text-white">
+              {estado === "inicial" && (
+                <div>
+                  <ScanFace className="mx-auto h-16 w-16 opacity-80" />
+                  <p className="mt-3 text-sm">Centra tu rostro en el círculo</p>
+                </div>
+              )}
+              {estado === "capturando" && (
+                <div>
+                  <Camera className="mx-auto h-16 w-16 animate-pulse" />
+                  <p className="mt-3 text-sm">Capturando imagen...</p>
+                </div>
+              )}
+              {estado === "analizando" && (
+                <div>
+                  <ScanLine className="mx-auto h-16 w-16 animate-pulse text-primary" />
+                  <p className="mt-3 text-sm">Analizando coincidencia...</p>
+                </div>
+              )}
+              {estado === "ok" && (
+                <div>
+                  <CheckCircle2 className="mx-auto h-16 w-16 text-emerald-400" />
+                  <p className="mt-3 text-lg font-bold">¡Verificación exitosa!</p>
+                  <p className="text-sm opacity-80">Match: {score}%</p>
+                </div>
+              )}
+              {estado === "fallo" && (
+                <div>
+                  <X className="mx-auto h-16 w-16 text-red-400" />
+                  <p className="mt-3 text-lg font-bold">No fue posible verificar</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-5 flex justify-center gap-2">
+            {estado === "inicial" && (
+              <button onClick={iniciar} className="inline-flex items-center gap-2 rounded-md bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90">
+                <Camera className="h-4 w-4" /> Iniciar validación
+              </button>
+            )}
+            {(estado === "ok" || estado === "fallo") && (
+              <button onClick={reintentar} className="rounded-md border bg-card px-5 py-2.5 text-sm font-medium hover:bg-muted">
+                Repetir captura
+              </button>
+            )}
+          </div>
+        </Card>
+
+        <div className="space-y-4">
+          <Card>
+            <h4 className="font-semibold">Antes de empezar</h4>
+            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+              <li>· Asegúrate de estar en un lugar bien iluminado.</li>
+              <li>· Retira lentes oscuros, gorros o accesorios.</li>
+              <li>· Mira directamente a la cámara.</li>
+              <li>· Mantente quieto durante la captura.</li>
+            </ul>
+          </Card>
+          <Card className="bg-info/5">
+            <div className="flex items-start gap-2 text-info">
+              <ShieldCheck className="mt-0.5 h-4 w-4" />
+              <div className="text-sm">
+                <p className="font-semibold text-foreground">Tu rostro está seguro</p>
+                <p className="mt-1 text-muted-foreground">La imagen capturada se compara con tu documento y luego se descarta. No almacenamos biometría tras la verificación.</p>
+              </div>
+            </div>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ====================== MENORES ====================== */
 function MenoresPanel() {
   const [menores, setMenores] = useState<{ id: number; nombre: string; rut: string; fecha: string; parentesco: string; autorizado: boolean }[]>([
     { id: 1, nombre: "Sofía Pérez Soto", rut: "25.114.882-3", fecha: "14-08-2014", parentesco: "Hija", autorizado: true },
@@ -495,7 +838,7 @@ function MenoresPanel() {
   const autorizar = (id: number) => {
     toast.loading("Validando autorización notarial...", { id: `m${id}` });
     setTimeout(() => {
-      setMenores(m => m.map(x => x.id === id ? { ...x, autorizado: true } : x));
+      setMenores((m) => m.map((x) => x.id === id ? { ...x, autorizado: true } : x));
       toast.success("Permiso de menor validado", { id: `m${id}`, description: "Notaría verificada con éxito." });
     }, 1400);
   };
@@ -506,7 +849,7 @@ function MenoresPanel() {
         <SectionTitle title="Menores de edad acompañantes" sub="Todo menor que cruce la frontera requiere autorización notarial vigente." />
 
         <div className="space-y-3">
-          {menores.map(m => (
+          {menores.map((m) => (
             <Card key={m.id} className="!p-4">
               <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4">
                 <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
@@ -532,7 +875,7 @@ function MenoresPanel() {
                       <Upload className="h-3.5 w-3.5" /> Subir permiso
                     </button>
                   )}
-                  <button onClick={() => setMenores(menores.filter(x => x.id !== m.id))}
+                  <button onClick={() => setMenores(menores.filter((x) => x.id !== m.id))}
                     className="grid h-9 w-9 place-items-center rounded-md border hover:bg-destructive/10 hover:text-destructive">
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -545,12 +888,12 @@ function MenoresPanel() {
         <Card className="mt-4">
           <h3 className="font-semibold">Agregar menor</h3>
           <form onSubmit={agregar} className="mt-3 grid gap-3 sm:grid-cols-2">
-            <Field label="Nombre completo *" value={form.nombre} onChange={v => setForm({ ...form, nombre: v })} />
-            <Field label="RUT / Doc. identidad *" value={form.rut} onChange={v => setForm({ ...form, rut: v })} />
-            <Field label="Fecha de nacimiento" type="date" value={form.fecha} onChange={v => setForm({ ...form, fecha: v })} />
+            <Field label="Nombre completo *" value={form.nombre} onChange={(v) => setForm({ ...form, nombre: v })} />
+            <Field label="RUT / Doc. identidad *" value={form.rut} onChange={(v) => setForm({ ...form, rut: v })} />
+            <Field label="Fecha de nacimiento" type="date" value={form.fecha} onChange={(v) => setForm({ ...form, fecha: v })} />
             <div>
               <label className="block text-sm font-medium">Parentesco</label>
-              <select value={form.parentesco} onChange={e => setForm({ ...form, parentesco: e.target.value })}
+              <select value={form.parentesco} onChange={(e) => setForm({ ...form, parentesco: e.target.value })}
                 className="mt-1.5 h-10 w-full rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/50">
                 <option>Hijo/a</option><option>Sobrino/a</option><option>Nieto/a</option><option>Otro</option>
               </select>
@@ -580,17 +923,8 @@ function MenoresPanel() {
     </div>
   );
 }
-function Field({ label, value, onChange, type = "text" }: { label: string; value: string; onChange: (v: string) => void; type?: string }) {
-  return (
-    <label className="block">
-      <span className="text-sm font-medium">{label}</span>
-      <input type={type} value={value} onChange={e => onChange(e.target.value)}
-        className="mt-1.5 h-10 w-full rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/50" />
-    </label>
-  );
-}
 
-/* ---------- Vehículo ---------- */
+/* ====================== VEHÍCULO ====================== */
 function VehiculoPanel() {
   const [form, setForm] = useState({
     patente: "JKLM-23", marca: "Toyota", modelo: "Hilux 2023",
@@ -613,12 +947,12 @@ function VehiculoPanel() {
       <Card>
         <SectionTitle title="Datos del vehículo" sub="Información necesaria para autorizar el cruce vehicular." />
         <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2">
-          <Field label="Patente *" value={form.patente} onChange={v => setForm({ ...form, patente: v })} />
-          <Field label="Marca" value={form.marca} onChange={v => setForm({ ...form, marca: v })} />
-          <Field label="Modelo" value={form.modelo} onChange={v => setForm({ ...form, modelo: v })} />
-          <Field label="Color" value={form.color} onChange={v => setForm({ ...form, color: v })} />
-          <Field label="N° Chasis / VIN" value={form.chasis} onChange={v => setForm({ ...form, chasis: v })} />
-          <Field label="Compañía de seguro" value={form.seguro} onChange={v => setForm({ ...form, seguro: v })} />
+          <Field label="Patente *" value={form.patente} onChange={(v) => setForm({ ...form, patente: v })} />
+          <Field label="Marca" value={form.marca} onChange={(v) => setForm({ ...form, marca: v })} />
+          <Field label="Modelo" value={form.modelo} onChange={(v) => setForm({ ...form, modelo: v })} />
+          <Field label="Color" value={form.color} onChange={(v) => setForm({ ...form, color: v })} />
+          <Field label="N° Chasis / VIN" value={form.chasis} onChange={(v) => setForm({ ...form, chasis: v })} />
+          <Field label="Compañía de seguro" value={form.seguro} onChange={(v) => setForm({ ...form, seguro: v })} />
 
           <div className="sm:col-span-2 rounded-lg border border-dashed bg-muted/30 p-4">
             <div className="flex items-center gap-3">
@@ -663,8 +997,8 @@ function VehiculoPanel() {
   );
 }
 
-/* ---------- Permiso ---------- */
-function PermisoPanel() {
+/* ====================== PERMISO ====================== */
+function PermisoPanel({ session }: { session: Session }) {
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
       <Card>
@@ -681,8 +1015,8 @@ function PermisoPanel() {
               <QrCode className="h-40 w-40 text-foreground" strokeWidth={1} />
             </div>
             <dl className="grid gap-y-1.5 text-sm">
-              <div><dt className="text-xs text-muted-foreground">Viajero</dt><dd className="font-semibold">Juan Pérez González</dd></div>
-              <div><dt className="text-xs text-muted-foreground">RUT</dt><dd className="font-medium">12.345.678-9</dd></div>
+              <div><dt className="text-xs text-muted-foreground">Viajero</dt><dd className="font-semibold">{session.nombre}</dd></div>
+              <div><dt className="text-xs text-muted-foreground">RUT</dt><dd className="font-medium">{session.rut ?? "—"}</dd></div>
               <div><dt className="text-xs text-muted-foreground">Vehículo</dt><dd className="font-medium">JKLM-23 · Toyota Hilux</dd></div>
               <div><dt className="text-xs text-muted-foreground">Paso</dt><dd className="font-medium">Los Libertadores</dd></div>
             </dl>
@@ -727,28 +1061,177 @@ function PermisoPanel() {
   );
 }
 
-/* ---------- Perfil ---------- */
-function PerfilPanel() {
+/* ====================== PERFIL / CONFIGURACIÓN DE CUENTA ====================== */
+/**
+ * @backend  PUT /api/viajeros/{id}             (datos perfil)
+ *           POST /api/auth/cambio-clave        (seguridad)
+ *           PUT /api/viajeros/{id}/preferencias
+ */
+function PerfilPanel({ session }: { session: Session }) {
+  const navigate = useNavigate();
+  const [sub, setSub] = useState<"perfil" | "seguridad" | "notif" | "preferencias">("perfil");
+
+  const cerrar = () => { logout(); toast.success("Sesión cerrada"); navigate({ to: "/" }); };
+
   return (
-    <div className="grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
-      <Card className="text-center">
-        <img src="https://i.pravatar.cc/160?img=12" alt="" className="mx-auto h-24 w-24 rounded-full border-4 border-primary/20" />
-        <h3 className="mt-3 text-lg font-bold">Juan Pérez González</h3>
-        <p className="text-sm text-muted-foreground">12.345.678-9 · Chile</p>
-        <div className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-success/15 px-3 py-1 text-xs font-semibold text-success">
-          <CheckCircle2 className="h-3.5 w-3.5" /> Identidad verificada
-        </div>
-      </Card>
-      <Card>
-        <h4 className="font-semibold">Mi cuenta</h4>
-        <div className="mt-3 divide-y">
-          {["Datos personales", "Mis vehículos", "Historial de cruces", "Notificaciones", "Idioma y región", "Ayuda y soporte"].map(t => (
-            <button key={t} className="flex w-full items-center justify-between py-3 text-sm font-medium hover:bg-muted/30">
-              {t} <ChevronRight className="h-4 w-4 text-muted-foreground" />
+    <div className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">
+      {/* Tarjeta usuario */}
+      <div className="space-y-4">
+        <Card className="text-center">
+          <img src={session.avatar} alt="" className="mx-auto h-24 w-24 rounded-full border-4 border-primary/20" />
+          <h3 className="mt-3 text-lg font-bold">{session.nombre}</h3>
+          <p className="text-sm text-muted-foreground">{session.rut ?? session.email}</p>
+          <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-success/15 px-3 py-1 text-xs font-semibold text-success">
+            <CheckCircle2 className="h-3.5 w-3.5" /> Identidad verificada
+          </div>
+        </Card>
+
+        <Card className="!p-2">
+          {[
+            { id: "perfil", label: "Mi perfil", icon: User },
+            { id: "seguridad", label: "Seguridad", icon: Lock },
+            { id: "notif", label: "Notificaciones", icon: BellIcon },
+            { id: "preferencias", label: "Preferencias", icon: Globe },
+          ].map(({ id, label, icon: Icon }) => (
+            <button key={id} onClick={() => setSub(id as typeof sub)}
+              className={cn("flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors",
+                sub === id ? "bg-primary text-primary-foreground" : "hover:bg-muted")}>
+              <Icon className="h-4 w-4" /> {label}
             </button>
           ))}
-        </div>
+          <button onClick={cerrar}
+            className="mt-1 flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-destructive hover:bg-destructive/10">
+            <LogOut className="h-4 w-4" /> Cerrar sesión
+          </button>
+        </Card>
+      </div>
+
+      <Card>
+        {sub === "perfil" && <PerfilSub session={session} />}
+        {sub === "seguridad" && <SeguridadSub />}
+        {sub === "notif" && <NotifSub />}
+        {sub === "preferencias" && <PrefSub />}
       </Card>
+    </div>
+  );
+}
+
+function PerfilSub({ session }: { session: Session }) {
+  const [form, setForm] = useState({
+    nombre: session.nombre, email: session.email, rut: session.rut ?? "",
+    telefono: "+56 9 9876 5432", direccion: "Av. Apoquindo 1234, Las Condes",
+  });
+  return (
+    <form onSubmit={(e) => { e.preventDefault(); toast.success("Datos actualizados"); }}>
+      <h3 className="font-semibold">Información del perfil</h3>
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <Field label="Nombre completo" value={form.nombre} onChange={(v) => setForm({ ...form, nombre: v })} />
+        <Field label="RUT" value={form.rut} disabled />
+        <Field label="Correo electrónico" value={form.email} disabled />
+        <Field label="Teléfono" value={form.telefono} onChange={(v) => setForm({ ...form, telefono: v })} />
+        <div className="sm:col-span-2"><Field label="Dirección" value={form.direccion} onChange={(v) => setForm({ ...form, direccion: v })} /></div>
+      </div>
+      <div className="mt-5 flex justify-end">
+        <button className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90">
+          <Save className="h-4 w-4" /> Guardar
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function SeguridadSub() {
+  const [form, setForm] = useState({ actual: "", nueva: "", conf: "" });
+  return (
+    <form onSubmit={(e) => {
+      e.preventDefault();
+      if (form.nueva.length < 8) return toast.error("Mínimo 8 caracteres");
+      if (form.nueva !== form.conf) return toast.error("Las contraseñas no coinciden");
+      toast.success("Contraseña actualizada");
+      setForm({ actual: "", nueva: "", conf: "" });
+    }}>
+      <h3 className="font-semibold">Cambiar contraseña</h3>
+      <div className="mt-4 grid max-w-md gap-4">
+        <Field label="Contraseña actual" type="password" value={form.actual} onChange={(v) => setForm({ ...form, actual: v })} />
+        <Field label="Nueva contraseña" type="password" value={form.nueva} onChange={(v) => setForm({ ...form, nueva: v })} />
+        <Field label="Repetir nueva contraseña" type="password" value={form.conf} onChange={(v) => setForm({ ...form, conf: v })} />
+      </div>
+      <div className="mt-5 flex justify-end">
+        <button className="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90">
+          Actualizar contraseña
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function NotifSub() {
+  const [p, setP] = useState({ alertas: true, recordatorios: true, promos: false, email: true, push: true });
+  return (
+    <div>
+      <h3 className="font-semibold">Notificaciones</h3>
+      <div className="mt-3 divide-y">
+        {[
+          ["alertas", "Alertas sobre el estado de mi cruce"],
+          ["recordatorios", "Recordatorios de documentos por vencer"],
+          ["promos", "Novedades y promociones"],
+          ["email", "Recibir por correo electrónico"],
+          ["push", "Notificaciones del navegador"],
+        ].map(([k, l]) => (
+          <Toggle key={k} label={l} value={p[k as keyof typeof p]} onChange={(v) => setP({ ...p, [k]: v })} />
+        ))}
+      </div>
+      <div className="mt-5 flex justify-end">
+        <button onClick={() => toast.success("Preferencias guardadas")} className="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90">
+          Guardar
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function PrefSub() {
+  const [p, setP] = useState({ idioma: "Español (Chile)", tema: "claro" });
+  return (
+    <div>
+      <h3 className="font-semibold">Preferencias</h3>
+      <div className="mt-4 grid max-w-md gap-4">
+        <div>
+          <label className="text-sm font-medium"><Globe className="mr-1.5 inline h-3.5 w-3.5" /> Idioma</label>
+          <select value={p.idioma} onChange={(e) => setP({ ...p, idioma: e.target.value })}
+            className="mt-1.5 h-10 w-full rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/50">
+            <option>Español (Chile)</option><option>English</option><option>Português</option>
+          </select>
+        </div>
+        <div>
+          <label className="text-sm font-medium">Tema</label>
+          <div className="mt-1.5 grid grid-cols-3 gap-2">
+            {["claro", "oscuro", "auto"].map((t) => (
+              <button key={t} onClick={() => setP({ ...p, tema: t })}
+                className={cn("rounded-md border px-3 py-2 text-sm capitalize", p.tema === t ? "border-primary bg-primary/5 font-semibold" : "hover:bg-muted")}>
+                {t}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="mt-5 flex justify-end">
+        <button onClick={() => toast.success("Preferencias aplicadas")} className="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90">
+          Aplicar
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function Toggle({ label, value, onChange }: { label: string; value: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <div className="flex items-center justify-between py-3">
+      <span className="text-sm">{label}</span>
+      <button onClick={() => onChange(!value)}
+        className={cn("relative h-6 w-11 rounded-full transition-colors", value ? "bg-primary" : "bg-muted")}>
+        <span className={cn("absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform", value ? "translate-x-5" : "translate-x-0.5")} />
+      </button>
     </div>
   );
 }

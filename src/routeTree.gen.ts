@@ -10,19 +10,27 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ViajeroRouteImport } from './routes/viajero'
+import { Route as RegistroRouteImport } from './routes/registro'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminViajeroRouteImport } from './routes/admin.viajero'
 import { Route as AdminValidacionesRouteImport } from './routes/admin.validaciones'
+import { Route as AdminScanRouteImport } from './routes/admin.scan'
 import { Route as AdminReportesRouteImport } from './routes/admin.reportes'
 import { Route as AdminPermisosRouteImport } from './routes/admin.permisos'
 import { Route as AdminDeclaracionRouteImport } from './routes/admin.declaracion'
+import { Route as AdminConfiguracionRouteImport } from './routes/admin.configuracion'
 import { Route as AdminAlertasRouteImport } from './routes/admin.alertas'
 
 const ViajeroRoute = ViajeroRouteImport.update({
   id: '/viajero',
   path: '/viajero',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegistroRoute = RegistroRouteImport.update({
+  id: '/registro',
+  path: '/registro',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -50,6 +58,11 @@ const AdminValidacionesRoute = AdminValidacionesRouteImport.update({
   path: '/validaciones',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminScanRoute = AdminScanRouteImport.update({
+  id: '/scan',
+  path: '/scan',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminReportesRoute = AdminReportesRouteImport.update({
   id: '/reportes',
   path: '/reportes',
@@ -65,6 +78,11 @@ const AdminDeclaracionRoute = AdminDeclaracionRouteImport.update({
   path: '/declaracion',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminConfiguracionRoute = AdminConfiguracionRouteImport.update({
+  id: '/configuracion',
+  path: '/configuracion',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminAlertasRoute = AdminAlertasRouteImport.update({
   id: '/alertas',
   path: '/alertas',
@@ -74,22 +92,28 @@ const AdminAlertasRoute = AdminAlertasRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/registro': typeof RegistroRoute
   '/viajero': typeof ViajeroRoute
   '/admin/alertas': typeof AdminAlertasRoute
+  '/admin/configuracion': typeof AdminConfiguracionRoute
   '/admin/declaracion': typeof AdminDeclaracionRoute
   '/admin/permisos': typeof AdminPermisosRoute
   '/admin/reportes': typeof AdminReportesRoute
+  '/admin/scan': typeof AdminScanRoute
   '/admin/validaciones': typeof AdminValidacionesRoute
   '/admin/viajero': typeof AdminViajeroRoute
   '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/registro': typeof RegistroRoute
   '/viajero': typeof ViajeroRoute
   '/admin/alertas': typeof AdminAlertasRoute
+  '/admin/configuracion': typeof AdminConfiguracionRoute
   '/admin/declaracion': typeof AdminDeclaracionRoute
   '/admin/permisos': typeof AdminPermisosRoute
   '/admin/reportes': typeof AdminReportesRoute
+  '/admin/scan': typeof AdminScanRoute
   '/admin/validaciones': typeof AdminValidacionesRoute
   '/admin/viajero': typeof AdminViajeroRoute
   '/admin': typeof AdminIndexRoute
@@ -98,11 +122,14 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/registro': typeof RegistroRoute
   '/viajero': typeof ViajeroRoute
   '/admin/alertas': typeof AdminAlertasRoute
+  '/admin/configuracion': typeof AdminConfiguracionRoute
   '/admin/declaracion': typeof AdminDeclaracionRoute
   '/admin/permisos': typeof AdminPermisosRoute
   '/admin/reportes': typeof AdminReportesRoute
+  '/admin/scan': typeof AdminScanRoute
   '/admin/validaciones': typeof AdminValidacionesRoute
   '/admin/viajero': typeof AdminViajeroRoute
   '/admin/': typeof AdminIndexRoute
@@ -112,22 +139,28 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/registro'
     | '/viajero'
     | '/admin/alertas'
+    | '/admin/configuracion'
     | '/admin/declaracion'
     | '/admin/permisos'
     | '/admin/reportes'
+    | '/admin/scan'
     | '/admin/validaciones'
     | '/admin/viajero'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/registro'
     | '/viajero'
     | '/admin/alertas'
+    | '/admin/configuracion'
     | '/admin/declaracion'
     | '/admin/permisos'
     | '/admin/reportes'
+    | '/admin/scan'
     | '/admin/validaciones'
     | '/admin/viajero'
     | '/admin'
@@ -135,11 +168,14 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/registro'
     | '/viajero'
     | '/admin/alertas'
+    | '/admin/configuracion'
     | '/admin/declaracion'
     | '/admin/permisos'
     | '/admin/reportes'
+    | '/admin/scan'
     | '/admin/validaciones'
     | '/admin/viajero'
     | '/admin/'
@@ -148,6 +184,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
+  RegistroRoute: typeof RegistroRoute
   ViajeroRoute: typeof ViajeroRoute
 }
 
@@ -158,6 +195,13 @@ declare module '@tanstack/react-router' {
       path: '/viajero'
       fullPath: '/viajero'
       preLoaderRoute: typeof ViajeroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/registro': {
+      id: '/registro'
+      path: '/registro'
+      fullPath: '/registro'
+      preLoaderRoute: typeof RegistroRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -195,6 +239,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminValidacionesRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/scan': {
+      id: '/admin/scan'
+      path: '/scan'
+      fullPath: '/admin/scan'
+      preLoaderRoute: typeof AdminScanRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/reportes': {
       id: '/admin/reportes'
       path: '/reportes'
@@ -216,6 +267,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminDeclaracionRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/configuracion': {
+      id: '/admin/configuracion'
+      path: '/configuracion'
+      fullPath: '/admin/configuracion'
+      preLoaderRoute: typeof AdminConfiguracionRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/alertas': {
       id: '/admin/alertas'
       path: '/alertas'
@@ -228,9 +286,11 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminAlertasRoute: typeof AdminAlertasRoute
+  AdminConfiguracionRoute: typeof AdminConfiguracionRoute
   AdminDeclaracionRoute: typeof AdminDeclaracionRoute
   AdminPermisosRoute: typeof AdminPermisosRoute
   AdminReportesRoute: typeof AdminReportesRoute
+  AdminScanRoute: typeof AdminScanRoute
   AdminValidacionesRoute: typeof AdminValidacionesRoute
   AdminViajeroRoute: typeof AdminViajeroRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -238,9 +298,11 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAlertasRoute: AdminAlertasRoute,
+  AdminConfiguracionRoute: AdminConfiguracionRoute,
   AdminDeclaracionRoute: AdminDeclaracionRoute,
   AdminPermisosRoute: AdminPermisosRoute,
   AdminReportesRoute: AdminReportesRoute,
+  AdminScanRoute: AdminScanRoute,
   AdminValidacionesRoute: AdminValidacionesRoute,
   AdminViajeroRoute: AdminViajeroRoute,
   AdminIndexRoute: AdminIndexRoute,
@@ -251,6 +313,7 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
+  RegistroRoute: RegistroRoute,
   ViajeroRoute: ViajeroRoute,
 }
 export const routeTree = rootRouteImport

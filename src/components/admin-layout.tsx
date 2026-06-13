@@ -1,14 +1,23 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, Users, Leaf, ShieldCheck, FileBadge, Bell, BarChart3,
-  Settings, LogOut, Menu, X, Bell as BellIcon, Search,
+  Settings, LogOut, Menu, X, Bell as BellIcon, Search, ScanLine,
 } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { getSession, logout, type Session } from "@/lib/auth";
 
+/**
+ * Layout principal del panel del operador.
+ * Verifica la sesión y muestra la información real del usuario logueado.
+ *
+ * @backend  El `getSession()` se reemplaza por `GET /api/auth/sesion` con JWT.
+ *           Si no hay sesión válida, redirige al login.
+ */
 const nav = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { to: "/admin/viajero", label: "Procesamiento viajero", icon: Users },
+  { to: "/admin/scan", label: "Escanear QR", icon: ScanLine },
   { to: "/admin/declaracion", label: "Declaración SAG", icon: Leaf },
   { to: "/admin/validaciones", label: "Validaciones", icon: ShieldCheck },
   { to: "/admin/permisos", label: "Permisos de cruce", icon: FileBadge },
@@ -17,8 +26,27 @@ const nav = [
 ];
 
 export function AdminLayout({ children, title, subtitle }: { children: ReactNode; title: string; subtitle?: string }) {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [session, setSession] = useState<Session | null>(null);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  // Guard de sesión — si no hay usuario, vuelve al login
+  useEffect(() => {
+    const s = getSession();
+    if (!s || s.rol !== "admin") {
+      navigate({ to: "/" });
+      return;
+    }
+    setSession(s);
+  }, [navigate]);
+
+  const cerrarSesion = () => {
+    logout();
+    navigate({ to: "/" });
+  };
+
+  if (!session) return null;
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -34,7 +62,7 @@ export function AdminLayout({ children, title, subtitle }: { children: ReactNode
             <div className="truncate text-[11px] text-sidebar-foreground/60">Los Libertadores</div>
           </div>
         </div>
-        <nav className="flex flex-col gap-1 p-3">
+        <nav className="flex flex-col gap-1 overflow-y-auto p-3 pb-32">
           {nav.map((item) => {
             const active = pathname === item.to || (item.to !== "/admin" && pathname.startsWith(item.to));
             const Icon = item.icon;
@@ -51,12 +79,18 @@ export function AdminLayout({ children, title, subtitle }: { children: ReactNode
           })}
         </nav>
         <div className="absolute inset-x-0 bottom-0 border-t border-sidebar-border p-3">
-          <Link to="/" className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-sidebar-foreground/80 hover:bg-sidebar-accent">
+          <Link to="/admin/configuracion" onClick={() => setOpen(false)}
+            className={cn(
+              "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
+              pathname.startsWith("/admin/configuracion")
+                ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                : "text-sidebar-foreground/80 hover:bg-sidebar-accent",
+            )}>
             <Settings className="h-4 w-4" /> Configuración
           </Link>
-          <Link to="/" className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-sidebar-foreground/80 hover:bg-sidebar-accent">
+          <button onClick={cerrarSesion} className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-sidebar-foreground/80 hover:bg-sidebar-accent">
             <LogOut className="h-4 w-4" /> Cerrar sesión
-          </Link>
+          </button>
         </div>
       </aside>
 
@@ -81,13 +115,13 @@ export function AdminLayout({ children, title, subtitle }: { children: ReactNode
               <BellIcon className="h-5 w-5" />
               <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-destructive" />
             </button>
-            <div className="flex items-center gap-2 rounded-md border bg-background px-2 py-1">
-              <img src="https://i.pravatar.cc/60?img=15" alt="" className="h-7 w-7 rounded-full" />
+            <Link to="/admin/configuracion" className="flex items-center gap-2 rounded-md border bg-background px-2 py-1 hover:bg-muted">
+              <img src={session.avatar} alt="" className="h-7 w-7 rounded-full" />
               <div className="hidden text-xs sm:block">
-                <div className="font-medium leading-tight">Op. Rodríguez</div>
-                <div className="text-muted-foreground">Operador turno A</div>
+                <div className="font-medium leading-tight">{session.nombre}</div>
+                <div className="text-muted-foreground">{session.cargo ?? "Operador"}</div>
               </div>
-            </div>
+            </Link>
           </div>
         </header>
 
