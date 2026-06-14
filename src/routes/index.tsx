@@ -245,7 +245,7 @@ function LoginPage() {
           </div>
 
           <p className="mt-6 text-center text-xs text-muted-foreground">
-            © 2026 Servicio Nacional de Aduanas · Demo frontend
+            © 2026 Servicio Nacional de Aduanas · Demo frontend por Marco Carrasco y Jeannette Figueroa
           </p>
         </div>
       </div>
