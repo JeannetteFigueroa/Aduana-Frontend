@@ -10,9 +10,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
-
 
 function NotFoundComponent() {
   return (
@@ -40,7 +38,8 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
+    // @backend: aquí se puede integrar un servicio de reporte de errores (Sentry, LogRocket, etc.)
+    // reportError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
 
   return (
