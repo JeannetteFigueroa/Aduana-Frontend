@@ -8,9 +8,6 @@ export default defineConfig({
   plugins: [
     TanStackStartVitePlugin({
       customViteReactPlugin: true,
-      server: {
-        preset: "vercel",
-      },
     }),
     react(),
     tsConfigPaths(),
