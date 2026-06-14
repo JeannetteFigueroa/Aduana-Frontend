@@ -1,15 +1,18 @@
 import { defineConfig } from "vite";
-import { TanStackStartVite } from "@tanstack/react-start-plugin/vite";
+import { TanStackStartVitePlugin } from "@tanstack/react-start-plugin";
+import react from "@vitejs/plugin-react";
 import tsConfigPaths from "vite-tsconfig-paths";
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
   plugins: [
-    TanStackStartVite({
+    TanStackStartVitePlugin({
+      customViteReactPlugin: true,
       server: {
         preset: "vercel",
       },
     }),
+    react(),
     tsConfigPaths(),
     tailwindcss(),
   ],
