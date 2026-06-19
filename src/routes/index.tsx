@@ -130,7 +130,8 @@ function LoginPage() {
               <p className="font-semibold">Aviso importante</p>
               <p className="leading-relaxed">
                 Estamos en mantenimiento debido a la creación del backend, si desea probar el
-                proyecto descargue el repositorio y vea en su local hasta nuevo aviso.
+                proyecto descargue el repositorio para revisar desde el local o bien acceda con la
+                credenciales de la demo pero verá la web sin datos hasta nuevo aviso.
               </p>
             </div>
           </div>
