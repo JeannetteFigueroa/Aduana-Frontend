@@ -16,11 +16,17 @@ const categorias = [
   { id: "cereales", label: "Cereales / granos", icon: Wheat, color: "text-amber-600" },
 ];
 
+/**
+ * Formulario administrativo para registrar una declaración SAG.
+ *
+ * @backend  POST /api/sag/declaracion  { categorias, items[] }   → { folio, estado }
+ *           GET  /api/sag/categorias                              → catálogo
+ */
 function Declaracion() {
   const [selected, setSelected] = useState<string[]>([]);
   const [items, setItems] = useState<
     { id: number; nombre: string; cantidad: string; origen: string }[]
-  >([{ id: 1, nombre: "Manzanas Gala", cantidad: "2 kg", origen: "Argentina" }]);
+  >([]);
 
   const toggle = (id: string) =>
     setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
@@ -49,11 +55,6 @@ function Declaracion() {
                   >
                     <Icon className={`h-8 w-8 ${c.color}`} />
                     <span className="text-center text-sm font-medium">{c.label}</span>
-                    {on && (
-                      <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground">
-                        SELECCIONADO
-                      </span>
-                    )}
                   </button>
                 );
               })}
@@ -62,7 +63,7 @@ function Declaracion() {
 
           <div className="rounded-xl border bg-card p-5 shadow-sm">
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="font-semibold">2. Detalle de productos declarados</h3>
+              <h3 className="font-semibold">2. Detalle de productos</h3>
               <button
                 onClick={() =>
                   setItems([...items, { id: Date.now(), nombre: "", cantidad: "", origen: "" }])
@@ -72,36 +73,42 @@ function Declaracion() {
                 <Plus className="h-3.5 w-3.5" /> Agregar producto
               </button>
             </div>
-            <div className="space-y-2">
-              {items.map((it) => (
-                <div
-                  key={it.id}
-                  className="grid grid-cols-1 gap-2 rounded-md border bg-background p-3 sm:grid-cols-[2fr_1fr_1fr_auto]"
-                >
-                  <input
-                    defaultValue={it.nombre}
-                    placeholder="Nombre del producto"
-                    className="h-9 rounded-md border bg-card px-3 text-sm outline-none focus:ring-2 focus:ring-ring/50"
-                  />
-                  <input
-                    defaultValue={it.cantidad}
-                    placeholder="Cantidad"
-                    className="h-9 rounded-md border bg-card px-3 text-sm outline-none focus:ring-2 focus:ring-ring/50"
-                  />
-                  <input
-                    defaultValue={it.origen}
-                    placeholder="País de origen"
-                    className="h-9 rounded-md border bg-card px-3 text-sm outline-none focus:ring-2 focus:ring-ring/50"
-                  />
-                  <button
-                    onClick={() => setItems(items.filter((x) => x.id !== it.id))}
-                    className="grid h-9 w-9 place-items-center rounded-md border hover:bg-destructive/10 hover:text-destructive"
+            {items.length === 0 ? (
+              <div className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
+                Sin productos agregados.
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {items.map((it) => (
+                  <div
+                    key={it.id}
+                    className="grid grid-cols-1 gap-2 rounded-md border bg-background p-3 sm:grid-cols-[2fr_1fr_1fr_auto]"
                   >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
+                    <input
+                      defaultValue={it.nombre}
+                      placeholder="Nombre del producto"
+                      className="h-9 rounded-md border bg-card px-3 text-sm outline-none focus:ring-2 focus:ring-ring/50"
+                    />
+                    <input
+                      defaultValue={it.cantidad}
+                      placeholder="Cantidad"
+                      className="h-9 rounded-md border bg-card px-3 text-sm outline-none focus:ring-2 focus:ring-ring/50"
+                    />
+                    <input
+                      defaultValue={it.origen}
+                      placeholder="País de origen"
+                      className="h-9 rounded-md border bg-card px-3 text-sm outline-none focus:ring-2 focus:ring-ring/50"
+                    />
+                    <button
+                      onClick={() => setItems(items.filter((x) => x.id !== it.id))}
+                      className="grid h-9 w-9 place-items-center rounded-md border hover:bg-destructive/10 hover:text-destructive"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end gap-2">
@@ -124,7 +131,6 @@ function Declaracion() {
               <li>· Es obligatorio declarar todo producto de origen vegetal o animal.</li>
               <li>· La no declaración constituye infracción según Ley 18.755.</li>
               <li>· Inspectores SAG pueden retener productos no autorizados.</li>
-              <li>· Productos lácteos, miel y frutos secos también deben declararse.</li>
             </ul>
           </div>
 
@@ -138,10 +144,6 @@ function Declaracion() {
               <div className="flex justify-between">
                 <dt className="text-muted-foreground">Productos</dt>
                 <dd className="font-medium">{items.length}</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-muted-foreground">Estado</dt>
-                <dd className="font-medium text-warning-foreground">Borrador</dd>
               </div>
             </dl>
           </div>
