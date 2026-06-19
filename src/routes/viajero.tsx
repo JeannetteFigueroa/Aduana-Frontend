@@ -1600,98 +1600,104 @@ function VehiculoPanel() {
 }
 
 /* ====================== PERMISO ====================== */
+/**
+ * @backend  GET /api/viajeros/{id}/permiso  →
+ *   { codigo, qr, estado, viajero, vehiculo, emitido, vence, validaciones }
+ *   Si no hay permiso emitido todavía, mostrar el placeholder.
+ */
 function PermisoPanel({ session }: { session: Session }) {
+  // Por ahora no se emite ningún permiso (no hay backend) — se muestra el estado vacío.
+  const permiso: null | {
+    codigo: string;
+    vehiculo: string;
+    emitido: string;
+    vence: string;
+  } = null;
+
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
       <Card>
-        <div className="rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-xs uppercase tracking-wider text-muted-foreground">
-                Permiso de cruce
-              </div>
-              <div className="font-mono text-lg font-bold">PRM-2026-00451</div>
-            </div>
-            <span className="rounded-full bg-success px-3 py-1 text-xs font-bold text-success-foreground">
-              AUTORIZADO
-            </span>
+        {!permiso ? (
+          <div className="grid place-items-center rounded-xl border-2 border-dashed border-muted bg-muted/20 p-10 text-center text-muted-foreground">
+            <QrCode className="h-12 w-12 opacity-40" />
+            <p className="mt-3 text-sm font-medium text-foreground">
+              Aún no tienes un permiso emitido
+            </p>
+            <p className="mt-1 text-xs">
+              Completa todos los pasos del trámite para generar tu permiso QR de cruce.
+            </p>
+            <p className="mt-3 font-mono text-[11px] opacity-70">
+              GET /api/viajeros/{session.id}/permiso
+            </p>
           </div>
-          <div className="my-5 grid gap-5 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-center">
-            <div className="mx-auto grid h-44 w-44 place-items-center rounded-lg bg-white sm:mx-0">
-              <QrCode className="h-40 w-40 text-foreground" strokeWidth={1} />
+        ) : (
+          <div className="rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-xs uppercase tracking-wider text-muted-foreground">
+                  Permiso de cruce
+                </div>
+                <div className="font-mono text-lg font-bold">{permiso.codigo}</div>
+              </div>
+              <span className="rounded-full bg-success px-3 py-1 text-xs font-bold text-success-foreground">
+                AUTORIZADO
+              </span>
             </div>
-            <dl className="grid gap-y-1.5 text-sm">
+            <div className="my-5 grid gap-5 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-center">
+              <div className="mx-auto grid h-44 w-44 place-items-center rounded-lg bg-white sm:mx-0">
+                <QrCode className="h-40 w-40 text-foreground" strokeWidth={1} />
+              </div>
+              <dl className="grid gap-y-1.5 text-sm">
+                <div>
+                  <dt className="text-xs text-muted-foreground">Viajero</dt>
+                  <dd className="font-semibold">{session.nombre}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-muted-foreground">RUT</dt>
+                  <dd className="font-medium">{session.rut ?? "—"}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-muted-foreground">Vehículo</dt>
+                  <dd className="font-medium">{permiso.vehiculo}</dd>
+                </div>
+              </dl>
+            </div>
+            <div className="grid grid-cols-2 gap-3 border-t border-primary/20 pt-4 text-sm">
               <div>
-                <dt className="text-xs text-muted-foreground">Viajero</dt>
-                <dd className="font-semibold">{session.nombre}</dd>
+                <div className="text-xs text-muted-foreground">Emitido</div>
+                <div className="font-medium">{permiso.emitido}</div>
               </div>
               <div>
-                <dt className="text-xs text-muted-foreground">RUT</dt>
-                <dd className="font-medium">{session.rut ?? "—"}</dd>
+                <div className="text-xs text-muted-foreground">Vence</div>
+                <div className="font-medium">{permiso.vence}</div>
               </div>
-              <div>
-                <dt className="text-xs text-muted-foreground">Vehículo</dt>
-                <dd className="font-medium">JKLM-23 · Toyota Hilux</dd>
-              </div>
-              <div>
-                <dt className="text-xs text-muted-foreground">Paso</dt>
-                <dd className="font-medium">Los Libertadores</dd>
-              </div>
-            </dl>
+            </div>
           </div>
-          <div className="grid grid-cols-2 gap-3 border-t border-primary/20 pt-4 text-sm">
-            <div>
-              <div className="text-xs text-muted-foreground">Emitido</div>
-              <div className="font-medium">11-06-2026 08:45</div>
-            </div>
-            <div>
-              <div className="text-xs text-muted-foreground">Vence</div>
-              <div className="font-medium">11-06-2026 23:59</div>
-            </div>
+        )}
+        {permiso && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            <button className="flex flex-1 items-center justify-center gap-2 rounded-md bg-primary py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90">
+              <Upload className="h-4 w-4 rotate-180" /> Descargar PDF
+            </button>
+            <button
+              onClick={() => toast.info("Mostrando QR para escaneo en cabina")}
+              className="flex items-center justify-center gap-2 rounded-md border px-4 py-2.5 text-sm font-medium hover:bg-muted"
+            >
+              <ScanLine className="h-4 w-4" /> Escanear en cabina
+            </button>
           </div>
-        </div>
-        <div className="mt-4 flex flex-wrap gap-2">
-          <button className="flex flex-1 items-center justify-center gap-2 rounded-md bg-primary py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90">
-            <Upload className="h-4 w-4 rotate-180" /> Descargar PDF
-          </button>
-          <button
-            onClick={() => toast.info("Mostrando QR para escaneo en cabina")}
-            className="flex items-center justify-center gap-2 rounded-md border px-4 py-2.5 text-sm font-medium hover:bg-muted"
-          >
-            <ScanLine className="h-4 w-4" /> Escanear en cabina
-          </button>
-        </div>
+        )}
       </Card>
 
-      <div className="space-y-4">
-        <Card>
-          <h4 className="font-semibold">Validaciones</h4>
-          <ul className="mt-3 space-y-2 text-sm">
-            {[
-              ["SAG", "Sin restricciones"],
-              ["PDI", "Identidad verificada"],
-              ["Aduanas", "Declaración OK"],
-              ["Carabineros", "Vehículo en regla"],
-            ].map(([k, v]) => (
-              <li key={k} className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-success" />
-                <span className="flex-1">
-                  <strong>{k}</strong> — {v}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </Card>
-        <Card className="bg-warning/10">
-          <div className="flex items-center gap-2 text-warning-foreground">
-            <Calendar className="h-4 w-4" />
-            <h4 className="font-semibold">Recuerda</h4>
-          </div>
-          <p className="mt-2 text-sm">
-            Tu permiso es válido solo durante la fecha indicada. Después deberás generar uno nuevo.
-          </p>
-        </Card>
-      </div>
+      <Card className="bg-warning/10">
+        <div className="flex items-center gap-2 text-warning-foreground">
+          <Calendar className="h-4 w-4" />
+          <h4 className="font-semibold">Recuerda</h4>
+        </div>
+        <p className="mt-2 text-sm">
+          Tu permiso es válido solo durante la fecha indicada. Después deberás generar uno nuevo.
+        </p>
+      </Card>
     </div>
   );
 }
