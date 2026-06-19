@@ -417,22 +417,24 @@ function ActionCard({
  * @backend  PUT /api/viajeros/{id}  con todos los datos del formulario.
  */
 function DatosPanel({ session }: { session: Session }) {
+  // Formulario en blanco — los valores se cargarán desde GET /api/viajeros/{id}
+  // y se enviarán con PUT /api/viajeros/{id}.
   const [form, setForm] = useState({
-    nombres: session.nombre.split(" ").slice(0, 2).join(" "),
-    apellidos: session.nombre.split(" ").slice(2).join(" "),
+    nombres: "",
+    apellidos: "",
     rut: session.rut ?? "",
     email: session.email,
-    telefono: "+56 9 9876 5432",
+    telefono: "",
     nacionalidad: "Chile",
-    fechaNacimiento: "1988-05-12",
+    fechaNacimiento: "",
     sexo: "Masculino",
     estadoCivil: "Soltero/a",
-    direccion: "Av. Apoquindo 1234, Las Condes",
-    ciudad: "Santiago",
-    profesion: "Ingeniero",
-    contactoEmergenciaNombre: "María Pérez",
-    contactoEmergenciaTel: "+56 9 1234 5678",
-    motivoViaje: "Turismo",
+    direccion: "",
+    ciudad: "",
+    profesion: "",
+    contactoEmergenciaNombre: "",
+    contactoEmergenciaTel: "",
+    motivoViaje: "",
   });
   const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
