@@ -11,7 +11,7 @@ import {
   EyeOff,
   AlertCircle,
 } from "lucide-react";
-import { login, DEMO_CREDENTIALS, getSession } from "@/lib/auth";
+import { login, getSession } from "@/lib/auth";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -29,8 +29,9 @@ export const Route = createFileRoute("/")({
 /**
  * Pantalla de login con dos pestañas (Operador / Viajero).
  *
- * @backend  el handler `submit` debe reemplazarse por una llamada al microservicio
- *           de autenticación. El resto de la UI no cambia.
+ * @backend  el handler `submit` llama a `login(...)` (en `src/lib/auth.ts`)
+ *           que internamente hace POST /api/auth/login al microservicio.
+ *           Mientras el microservicio no esté arriba, la llamada lanzará error.
  */
 function LoginPage() {
   const navigate = useNavigate();
@@ -47,7 +48,7 @@ function LoginPage() {
     if (s) navigate({ to: s.rol === "admin" ? "/admin" : "/viajero" });
   }, [navigate]);
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
@@ -58,27 +59,18 @@ function LoginPage() {
     }
 
     setLoading(true);
-    // ⏱️ Simulación de latencia de red — quitar al conectar API
-    setTimeout(() => {
-      try {
-        const session = login(usuario, clave);
-        if (tipo === "admin" && session.rol !== "admin") {
-          setError("Esta cuenta no tiene permisos de operador");
-          setLoading(false);
-          return;
-        }
-        navigate({ to: session.rol === "admin" ? "/admin" : "/viajero" });
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Error al iniciar sesión");
-        setLoading(false);
+    try {
+      const session = await login(usuario, clave);
+      if (tipo === "admin" && session.rol !== "admin") {
+        setError("Esta cuenta no tiene permisos de operador");
+        return;
       }
-    }, 600);
-  };
-
-  const fillDemo = (email: string, c: string) => {
-    setUsuario(email);
-    setClave(c);
-    setError(null);
+      navigate({ to: session.rol === "admin" ? "/admin" : "/viajero" });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al iniciar sesión");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -108,28 +100,13 @@ function LoginPage() {
             Control fronterizo Chile · Argentina. Gestión unificada de viajeros, declaraciones y
             validaciones interinstitucionales.
           </p>
-          <div className="grid grid-cols-3 gap-4 pt-4">
-            {[
-              { k: "12.8K", v: "Cruces hoy" },
-              { k: "98.2%", v: "Validación OK" },
-              { k: "6", v: "Cabinas activas" },
-            ].map((s) => (
-              <div
-                key={s.v}
-                className="rounded-lg border border-white/15 bg-white/5 p-3 backdrop-blur"
-              >
-                <div className="text-2xl font-bold">{s.k}</div>
-                <div className="text-xs text-white/70">{s.v}</div>
-              </div>
-            ))}
-          </div>
         </div>
 
         <div className="flex items-center justify-between text-xs text-white/70">
           <div className="flex items-center gap-2">
             <Cloud className="h-4 w-4" /> 7°C · Despejado · Andes
           </div>
-          <div>v3.2.1 · 11 Jun 2026</div>
+          <div>v3.2.1</div>
         </div>
       </div>
 
@@ -261,29 +238,8 @@ function LoginPage() {
             </p>
           )}
 
-          {/* Credenciales demo — eliminar al conectar backend real */}
-          <div className="mt-6 rounded-lg border border-dashed bg-muted/30 p-3 text-xs">
-            <div className="mb-2 font-semibold text-muted-foreground">
-              🧪 Credenciales de prueba ({tipo === "admin" ? "Operador" : "Viajero"})
-            </div>
-            <div className="space-y-1.5">
-              {(tipo === "admin" ? DEMO_CREDENTIALS.admin : DEMO_CREDENTIALS.viajero).map((c) => (
-                <button
-                  key={c.email}
-                  type="button"
-                  onClick={() => fillDemo(c.email, c.clave)}
-                  className="flex w-full items-center justify-between rounded border bg-card px-2.5 py-1.5 text-left hover:border-primary hover:bg-primary/5"
-                >
-                  <span className="truncate font-mono">{c.email}</span>
-                  <span className="ml-2 shrink-0 text-muted-foreground">{c.clave}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
           <p className="mt-6 text-center text-xs text-muted-foreground">
-            © 2026 Servicio Nacional de Aduanas · Demo frontend por Marco Carrasco y Jeannette
-            Figueroa
+            © 2026 Servicio Nacional de Aduanas · Sistema Integrado Los Libertadores
           </p>
         </div>
       </div>
