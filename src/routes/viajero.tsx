@@ -1774,8 +1774,8 @@ function PerfilSub({ session }: { session: Session }) {
     nombre: session.nombre,
     email: session.email,
     rut: session.rut ?? "",
-    telefono: "+56 9 9876 5432",
-    direccion: "Av. Apoquindo 1234, Las Condes",
+    telefono: "",
+    direccion: "",
   });
   return (
     <form
