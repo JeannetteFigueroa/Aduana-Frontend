@@ -238,6 +238,19 @@ function LoginPage() {
             </p>
           )}
 
+          {/* ⚠️ Cuentas DEMO — eliminar al conectar el backend (ver src/lib/auth.ts) */}
+          <div className="mt-6 rounded-md border border-dashed bg-muted/30 p-3 text-xs text-muted-foreground">
+            <div className="mb-1 font-semibold text-foreground">Cuentas de prueba</div>
+            <div>
+              <span className="font-mono">admin@aduana.cl</span> /{" "}
+              <span className="font-mono">admin1234</span> · operador
+            </div>
+            <div>
+              <span className="font-mono">viajero@correo.cl</span> /{" "}
+              <span className="font-mono">viajero1234</span> · viajero
+            </div>
+          </div>
+
           <p className="mt-6 text-center text-xs text-muted-foreground">
             © 2026 Servicio Nacional de Aduanas · Sistema Integrado Los Libertadores
           </p>
