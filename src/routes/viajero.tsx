@@ -1473,13 +1473,14 @@ function MenoresPanel() {
 
 /* ====================== VEHÍCULO ====================== */
 function VehiculoPanel() {
+  // @backend  GET /api/viajeros/{id}/vehiculo  → precargar este formulario.
   const [form, setForm] = useState({
-    patente: "JKLM-23",
-    marca: "Toyota",
-    modelo: "Hilux 2023",
-    color: "Blanco",
-    chasis: "AHTBB3CD500123456",
-    seguro: "Mapfre Internacional",
+    patente: "",
+    marca: "",
+    modelo: "",
+    color: "",
+    chasis: "",
+    seguro: "",
   });
 
   const submit = (e: React.FormEvent) => {
