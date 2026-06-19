@@ -24,7 +24,7 @@ export type Rol = "admin" | "viajero";
 export interface UsuarioBase {
   id: string;
   email: string;
-  clave: string;          // ⚠️ MOCK ONLY — el backend debe guardar HASH (bcrypt/argon2)
+  clave: string; // ⚠️ MOCK ONLY — el backend debe guardar HASH (bcrypt/argon2)
   rol: Rol;
   nombre: string;
   avatar: string;
@@ -157,7 +157,8 @@ export function login(identificador: string, clave: string): Session {
 
   const user = users.find((u) => {
     const emailMatch = u.email.toLowerCase() === id;
-    const rutMatch = u.rut && u.rut.replace(/\./g, "").replace(/-/g, "").toLowerCase() === rutNormalizado;
+    const rutMatch =
+      u.rut && u.rut.replace(/\./g, "").replace(/-/g, "").toLowerCase() === rutNormalizado;
     return emailMatch || rutMatch;
   });
 

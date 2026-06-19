@@ -1,13 +1,26 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Cloud, Lock, User, Mountain, ShieldCheck, Smartphone, Eye, EyeOff, AlertCircle } from "lucide-react";
+import {
+  Cloud,
+  Lock,
+  User,
+  Mountain,
+  ShieldCheck,
+  Smartphone,
+  Eye,
+  EyeOff,
+  AlertCircle,
+} from "lucide-react";
 import { login, DEMO_CREDENTIALS, getSession } from "@/lib/auth";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Sistema Integrado Los Libertadores — Aduanas Chile" },
-      { name: "description", content: "Plataforma de gestión integrada del paso fronterizo Los Libertadores." },
+      {
+        name: "description",
+        content: "Plataforma de gestión integrada del paso fronterizo Los Libertadores.",
+      },
     ],
   }),
   component: LoginPage,
@@ -87,12 +100,13 @@ function LoginPage() {
             <span className="h-2 w-2 rounded-full bg-emerald-400" /> Sistema operativo
           </div>
           <h2 className="text-4xl font-bold leading-tight xl:text-5xl">
-            Sistema Integrado<br />
+            Sistema Integrado
+            <br />
             <span className="text-white/80">Los Libertadores</span>
           </h2>
           <p className="max-w-md text-white/80">
-            Control fronterizo Chile · Argentina. Gestión unificada de viajeros,
-            declaraciones y validaciones interinstitucionales.
+            Control fronterizo Chile · Argentina. Gestión unificada de viajeros, declaraciones y
+            validaciones interinstitucionales.
           </p>
           <div className="grid grid-cols-3 gap-4 pt-4">
             {[
@@ -100,7 +114,10 @@ function LoginPage() {
               { k: "98.2%", v: "Validación OK" },
               { k: "6", v: "Cabinas activas" },
             ].map((s) => (
-              <div key={s.v} className="rounded-lg border border-white/15 bg-white/5 p-3 backdrop-blur">
+              <div
+                key={s.v}
+                className="rounded-lg border border-white/15 bg-white/5 p-3 backdrop-blur"
+              >
                 <div className="text-2xl font-bold">{s.k}</div>
                 <div className="text-xs text-white/70">{s.v}</div>
               </div>
@@ -109,7 +126,9 @@ function LoginPage() {
         </div>
 
         <div className="flex items-center justify-between text-xs text-white/70">
-          <div className="flex items-center gap-2"><Cloud className="h-4 w-4" /> 7°C · Despejado · Andes</div>
+          <div className="flex items-center gap-2">
+            <Cloud className="h-4 w-4" /> 7°C · Despejado · Andes
+          </div>
           <div>v3.2.1 · 11 Jun 2026</div>
         </div>
       </div>
@@ -128,24 +147,36 @@ function LoginPage() {
           </div>
 
           <h1 className="text-2xl font-bold">Iniciar sesión</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Selecciona tu tipo de cuenta para continuar.</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Selecciona tu tipo de cuenta para continuar.
+          </p>
 
           {/* Selector tipo de cuenta */}
           <div className="mt-6 grid grid-cols-2 rounded-lg border bg-muted/40 p-1">
             <button
               type="button"
-              onClick={() => { setTipo("viajero"); setError(null); }}
+              onClick={() => {
+                setTipo("viajero");
+                setError(null);
+              }}
               className={`flex items-center justify-center gap-2 rounded-md py-2 text-sm font-semibold transition-colors ${
-                tipo === "viajero" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                tipo === "viajero"
+                  ? "bg-card text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <Smartphone className="h-4 w-4" /> Viajero
             </button>
             <button
               type="button"
-              onClick={() => { setTipo("admin"); setError(null); }}
+              onClick={() => {
+                setTipo("admin");
+                setError(null);
+              }}
               className={`flex items-center justify-center gap-2 rounded-md py-2 text-sm font-semibold transition-colors ${
-                tipo === "admin" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                tipo === "admin"
+                  ? "bg-card text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <ShieldCheck className="h-4 w-4" /> Operador
@@ -162,7 +193,9 @@ function LoginPage() {
                 <input
                   value={usuario}
                   onChange={(e) => setUsuario(e.target.value)}
-                  placeholder={tipo === "admin" ? "operador@aduana.cl" : "12.345.678-9 o tucorreo@mail.com"}
+                  placeholder={
+                    tipo === "admin" ? "operador@aduana.cl" : "12.345.678-9 o tucorreo@mail.com"
+                  }
                   className="h-11 w-full rounded-md border bg-background pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring/50"
                   autoComplete="username"
                   required
@@ -202,8 +235,12 @@ function LoginPage() {
             )}
 
             <div className="flex items-center justify-between text-xs">
-              <label className="flex items-center gap-2"><input type="checkbox" className="rounded" /> Recordarme</label>
-              <a href="#" className="font-medium text-primary hover:underline">¿Olvidó su clave?</a>
+              <label className="flex items-center gap-2">
+                <input type="checkbox" className="rounded" /> Recordarme
+              </label>
+              <a href="#" className="font-medium text-primary hover:underline">
+                ¿Olvidó su clave?
+              </a>
             </div>
 
             <button
@@ -245,7 +282,8 @@ function LoginPage() {
           </div>
 
           <p className="mt-6 text-center text-xs text-muted-foreground">
-            © 2026 Servicio Nacional de Aduanas · Demo frontend por Marco Carrasco y Jeannette Figueroa
+            © 2026 Servicio Nacional de Aduanas · Demo frontend por Marco Carrasco y Jeannette
+            Figueroa
           </p>
         </div>
       </div>

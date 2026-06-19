@@ -62,7 +62,10 @@ function RegistroPage() {
   return (
     <div className="min-h-screen bg-muted/30 px-4 py-8 sm:py-12">
       <div className="mx-auto max-w-2xl">
-        <Link to="/" className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+        <Link
+          to="/"
+          className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+        >
           <ArrowLeft className="h-4 w-4" /> Volver al inicio
         </Link>
 
@@ -85,20 +88,47 @@ function RegistroPage() {
                 <CheckCircle2 className="h-8 w-8" />
               </div>
               <h2 className="mt-4 text-xl font-bold">¡Cuenta creada exitosamente!</h2>
-              <p className="mt-1 text-sm text-muted-foreground">Redirigiendo al portal del viajero...</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Redirigiendo al portal del viajero...
+              </p>
             </div>
           ) : (
             <form onSubmit={submit} className="space-y-5 p-6 sm:p-8">
               <div>
                 <h3 className="font-semibold">Datos personales</h3>
-                <p className="text-xs text-muted-foreground">Información necesaria para validar tu identidad.</p>
+                <p className="text-xs text-muted-foreground">
+                  Información necesaria para validar tu identidad.
+                </p>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Nombre completo *" value={form.nombre} onChange={(v) => set("nombre", v)} required />
-                <Field label="RUT / DNI *" value={form.rut} onChange={(v) => set("rut", v)} placeholder="12.345.678-9" required />
-                <Field label="Correo electrónico *" type="email" value={form.email} onChange={(v) => set("email", v)} placeholder="tucorreo@mail.com" required />
-                <Field label="Teléfono" value={form.telefono} onChange={(v) => set("telefono", v)} placeholder="+56 9 1234 5678" />
+                <Field
+                  label="Nombre completo *"
+                  value={form.nombre}
+                  onChange={(v) => set("nombre", v)}
+                  required
+                />
+                <Field
+                  label="RUT / DNI *"
+                  value={form.rut}
+                  onChange={(v) => set("rut", v)}
+                  placeholder="12.345.678-9"
+                  required
+                />
+                <Field
+                  label="Correo electrónico *"
+                  type="email"
+                  value={form.email}
+                  onChange={(v) => set("email", v)}
+                  placeholder="tucorreo@mail.com"
+                  required
+                />
+                <Field
+                  label="Teléfono"
+                  value={form.telefono}
+                  onChange={(v) => set("telefono", v)}
+                  placeholder="+56 9 1234 5678"
+                />
                 <div>
                   <label className="block text-sm font-medium">Nacionalidad</label>
                   <select
@@ -114,23 +144,54 @@ function RegistroPage() {
                     <option>Otra</option>
                   </select>
                 </div>
-                <Field label="Fecha de nacimiento" type="date" value={form.fechaNacimiento} onChange={(v) => set("fechaNacimiento", v)} />
+                <Field
+                  label="Fecha de nacimiento"
+                  type="date"
+                  value={form.fechaNacimiento}
+                  onChange={(v) => set("fechaNacimiento", v)}
+                />
               </div>
 
               <div className="border-t pt-5">
                 <h3 className="font-semibold">Seguridad</h3>
                 <div className="mt-3 grid gap-4 sm:grid-cols-2">
-                  <Field label="Contraseña *" type="password" value={form.clave} onChange={(v) => set("clave", v)} required />
-                  <Field label="Repetir contraseña *" type="password" value={form.claveConf} onChange={(v) => set("claveConf", v)} required />
+                  <Field
+                    label="Contraseña *"
+                    type="password"
+                    value={form.clave}
+                    onChange={(v) => set("clave", v)}
+                    required
+                  />
+                  <Field
+                    label="Repetir contraseña *"
+                    type="password"
+                    value={form.claveConf}
+                    onChange={(v) => set("claveConf", v)}
+                    required
+                  />
                 </div>
-                <p className="mt-2 text-xs text-muted-foreground">Mínimo 8 caracteres. Usa letras, números y símbolos.</p>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Mínimo 8 caracteres. Usa letras, números y símbolos.
+                </p>
               </div>
 
               <label className="flex items-start gap-2 text-sm">
-                <input type="checkbox" checked={form.acepta} onChange={(e) => set("acepta", e.target.checked)} className="mt-1 rounded" />
+                <input
+                  type="checkbox"
+                  checked={form.acepta}
+                  onChange={(e) => set("acepta", e.target.checked)}
+                  className="mt-1 rounded"
+                />
                 <span className="text-muted-foreground">
-                  Acepto los <a href="#" className="font-medium text-primary hover:underline">términos y condiciones</a> y la{" "}
-                  <a href="#" className="font-medium text-primary hover:underline">política de tratamiento de datos</a> del Servicio Nacional de Aduanas.
+                  Acepto los{" "}
+                  <a href="#" className="font-medium text-primary hover:underline">
+                    términos y condiciones
+                  </a>{" "}
+                  y la{" "}
+                  <a href="#" className="font-medium text-primary hover:underline">
+                    política de tratamiento de datos
+                  </a>{" "}
+                  del Servicio Nacional de Aduanas.
                 </span>
               </label>
 
@@ -142,10 +203,16 @@ function RegistroPage() {
               )}
 
               <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-between">
-                <Link to="/" className="rounded-md border bg-card px-5 py-2.5 text-center text-sm font-medium hover:bg-muted">
+                <Link
+                  to="/"
+                  className="rounded-md border bg-card px-5 py-2.5 text-center text-sm font-medium hover:bg-muted"
+                >
                   Cancelar
                 </Link>
-                <button type="submit" className="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90">
+                <button
+                  type="submit"
+                  className="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+                >
                   Crear cuenta
                 </button>
               </div>
@@ -158,8 +225,20 @@ function RegistroPage() {
 }
 
 function Field({
-  label, value, onChange, type = "text", placeholder, required,
-}: { label: string; value: string; onChange: (v: string) => void; type?: string; placeholder?: string; required?: boolean }) {
+  label,
+  value,
+  onChange,
+  type = "text",
+  placeholder,
+  required,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  type?: string;
+  placeholder?: string;
+  required?: boolean;
+}) {
   return (
     <label className="block">
       <span className="text-sm font-medium">{label}</span>

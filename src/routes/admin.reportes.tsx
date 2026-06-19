@@ -2,7 +2,18 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AdminLayout } from "@/components/admin-layout";
 import { flujoHorario } from "@/lib/mock-data";
 import { Download, Calendar } from "lucide-react";
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
 
 export const Route = createFileRoute("/admin/reportes")({
   head: () => ({ meta: [{ title: "Reportes y estadísticas" }] }),
@@ -21,7 +32,10 @@ const semana = [
 
 function Reportes() {
   return (
-    <AdminLayout title="Reportes y estadísticas" subtitle="Indicadores de desempeño del paso fronterizo">
+    <AdminLayout
+      title="Reportes y estadísticas"
+      subtitle="Indicadores de desempeño del paso fronterizo"
+    >
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2 rounded-md border bg-card px-3 py-2 text-sm">
           <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -38,7 +52,7 @@ function Reportes() {
           { l: "Vehículos", v: "12.843", d: "+8.1%" },
           { l: "Tiempo prom. cruce", v: "08m 41s", d: "-2m respecto a la semana anterior" },
           { l: "Horario peak", v: "12:00 – 16:00", d: "Sábado el día más concurrido" },
-        ].map(k => (
+        ].map((k) => (
           <div key={k.l} className="rounded-xl border bg-card p-5 shadow-sm">
             <div className="text-xs text-muted-foreground">{k.l}</div>
             <div className="mt-1 text-3xl font-bold">{k.v}</div>
@@ -57,7 +71,13 @@ function Reportes() {
                 <XAxis dataKey="dia" fontSize={11} />
                 <YAxis fontSize={11} />
                 <Tooltip contentStyle={{ borderRadius: 8, fontSize: 12 }} />
-                <Line type="monotone" dataKey="cruces" stroke="oklch(0.5 0.16 255)" strokeWidth={2.5} dot={{ r: 4 }} />
+                <Line
+                  type="monotone"
+                  dataKey="cruces"
+                  stroke="oklch(0.5 0.16 255)"
+                  strokeWidth={2.5}
+                  dot={{ r: 4 }}
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -71,7 +91,7 @@ function Reportes() {
                 <XAxis dataKey="dia" fontSize={11} />
                 <YAxis fontSize={11} />
                 <Tooltip contentStyle={{ borderRadius: 8, fontSize: 12 }} />
-                <Bar dataKey="espera" fill="oklch(0.6 0.13 235)" radius={[6,6,0,0]} />
+                <Bar dataKey="espera" fill="oklch(0.6 0.13 235)" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -86,8 +106,8 @@ function Reportes() {
                 <YAxis fontSize={11} />
                 <Tooltip contentStyle={{ borderRadius: 8, fontSize: 12 }} />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Bar dataKey="entradas" fill="oklch(0.5 0.16 255)" radius={[4,4,0,0]} />
-                <Bar dataKey="salidas" fill="oklch(0.62 0.16 150)" radius={[4,4,0,0]} />
+                <Bar dataKey="entradas" fill="oklch(0.5 0.16 255)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="salidas" fill="oklch(0.62 0.16 150)" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

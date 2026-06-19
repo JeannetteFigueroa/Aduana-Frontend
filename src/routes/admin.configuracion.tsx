@@ -25,7 +25,10 @@ function Configuracion() {
 
   useEffect(() => {
     const s = getSession();
-    if (!s) { navigate({ to: "/" }); return; }
+    if (!s) {
+      navigate({ to: "/" });
+      return;
+    }
     setSession(s);
   }, [navigate]);
 
@@ -38,7 +41,10 @@ function Configuracion() {
   };
 
   return (
-    <AdminLayout title="Configuración de la cuenta" subtitle="Gestiona tu perfil, seguridad y preferencias del sistema">
+    <AdminLayout
+      title="Configuración de la cuenta"
+      subtitle="Gestiona tu perfil, seguridad y preferencias del sistema"
+    >
       <div className="grid gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
         {/* Menú lateral */}
         <aside className="rounded-xl border bg-card p-3 shadow-sm">
@@ -90,27 +96,49 @@ function PerfilTab({ session }: { session: Session }) {
 
   return (
     <form
-      onSubmit={(e) => { e.preventDefault(); toast.success("Perfil actualizado", { description: "Cambios guardados correctamente." }); }}
+      onSubmit={(e) => {
+        e.preventDefault();
+        toast.success("Perfil actualizado", { description: "Cambios guardados correctamente." });
+      }}
     >
       <div className="flex flex-wrap items-center gap-4 border-b pb-5">
-        <img src={session.avatar} alt="" className="h-20 w-20 rounded-full border-4 border-primary/20" />
+        <img
+          src={session.avatar}
+          alt=""
+          className="h-20 w-20 rounded-full border-4 border-primary/20"
+        />
         <div>
           <h3 className="text-lg font-bold">{session.nombre}</h3>
-          <p className="text-sm text-muted-foreground">{session.cargo} · {session.turno}</p>
-          <button type="button" className="mt-2 text-xs font-medium text-primary hover:underline">Cambiar foto</button>
+          <p className="text-sm text-muted-foreground">
+            {session.cargo} · {session.turno}
+          </p>
+          <button type="button" className="mt-2 text-xs font-medium text-primary hover:underline">
+            Cambiar foto
+          </button>
         </div>
       </div>
 
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
-        <Field label="Nombre completo" value={form.nombre} onChange={(v) => setForm({ ...form, nombre: v })} />
+        <Field
+          label="Nombre completo"
+          value={form.nombre}
+          onChange={(v) => setForm({ ...form, nombre: v })}
+        />
         <Field label="Correo institucional" value={form.email} disabled />
         <Field label="Cargo" value={form.cargo} onChange={(v) => setForm({ ...form, cargo: v })} />
         <Field label="Turno" value={form.turno} onChange={(v) => setForm({ ...form, turno: v })} />
-        <Field label="Teléfono" value={form.telefono} onChange={(v) => setForm({ ...form, telefono: v })} />
+        <Field
+          label="Teléfono"
+          value={form.telefono}
+          onChange={(v) => setForm({ ...form, telefono: v })}
+        />
       </div>
 
       <div className="mt-6 flex justify-end">
-        <button type="submit" className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90">
+        <button
+          type="submit"
+          className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+        >
           <Save className="h-4 w-4" /> Guardar cambios
         </button>
       </div>
@@ -125,18 +153,36 @@ function SeguridadTab() {
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        if (form.nueva.length < 8) return toast.error("La nueva contraseña debe tener al menos 8 caracteres");
+        if (form.nueva.length < 8)
+          return toast.error("La nueva contraseña debe tener al menos 8 caracteres");
         if (form.nueva !== form.conf) return toast.error("Las contraseñas no coinciden");
         toast.success("Contraseña actualizada");
         setForm({ actual: "", nueva: "", conf: "" });
       }}
     >
       <h3 className="font-semibold">Cambiar contraseña</h3>
-      <p className="text-sm text-muted-foreground">Tu sesión se mantendrá activa luego del cambio.</p>
+      <p className="text-sm text-muted-foreground">
+        Tu sesión se mantendrá activa luego del cambio.
+      </p>
       <div className="mt-4 grid max-w-md gap-4">
-        <Field label="Contraseña actual" type="password" value={form.actual} onChange={(v) => setForm({ ...form, actual: v })} />
-        <Field label="Nueva contraseña" type="password" value={form.nueva} onChange={(v) => setForm({ ...form, nueva: v })} />
-        <Field label="Repetir nueva contraseña" type="password" value={form.conf} onChange={(v) => setForm({ ...form, conf: v })} />
+        <Field
+          label="Contraseña actual"
+          type="password"
+          value={form.actual}
+          onChange={(v) => setForm({ ...form, actual: v })}
+        />
+        <Field
+          label="Nueva contraseña"
+          type="password"
+          value={form.nueva}
+          onChange={(v) => setForm({ ...form, nueva: v })}
+        />
+        <Field
+          label="Repetir nueva contraseña"
+          type="password"
+          value={form.conf}
+          onChange={(v) => setForm({ ...form, conf: v })}
+        />
       </div>
 
       <div className="mt-6 border-t pt-5">
@@ -145,15 +191,22 @@ function SeguridadTab() {
           <li className="flex items-center justify-between rounded-md border p-3">
             <div>
               <div className="font-medium">Este dispositivo · Cabina 2</div>
-              <div className="text-xs text-muted-foreground">Chrome · 192.168.10.45 · Hace unos minutos</div>
+              <div className="text-xs text-muted-foreground">
+                Chrome · 192.168.10.45 · Hace unos minutos
+              </div>
             </div>
-            <span className="rounded-full bg-success/15 px-2.5 py-0.5 text-xs font-semibold text-success">Actual</span>
+            <span className="rounded-full bg-success/15 px-2.5 py-0.5 text-xs font-semibold text-success">
+              Actual
+            </span>
           </li>
         </ul>
       </div>
 
       <div className="mt-6 flex justify-end">
-        <button type="submit" className="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90">
+        <button
+          type="submit"
+          className="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+        >
           Actualizar contraseña
         </button>
       </div>
@@ -162,11 +215,19 @@ function SeguridadTab() {
 }
 
 function NotificacionesTab() {
-  const [pref, setPref] = useState({ alertas: true, turnos: true, reportes: false, email: true, push: true });
+  const [pref, setPref] = useState({
+    alertas: true,
+    turnos: true,
+    reportes: false,
+    email: true,
+    push: true,
+  });
   return (
     <div>
       <h3 className="font-semibold">Notificaciones</h3>
-      <p className="text-sm text-muted-foreground">Elige qué eventos quieres recibir y por qué medio.</p>
+      <p className="text-sm text-muted-foreground">
+        Elige qué eventos quieres recibir y por qué medio.
+      </p>
       <div className="mt-4 divide-y">
         {[
           ["alertas", "Alertas operacionales en tiempo real"],
@@ -175,11 +236,19 @@ function NotificacionesTab() {
           ["email", "Recibir por correo electrónico"],
           ["push", "Notificaciones del navegador"],
         ].map(([key, label]) => (
-          <Toggle key={key} label={label} value={pref[key as keyof typeof pref]} onChange={(v) => setPref({ ...pref, [key]: v })} />
+          <Toggle
+            key={key}
+            label={label}
+            value={pref[key as keyof typeof pref]}
+            onChange={(v) => setPref({ ...pref, [key]: v })}
+          />
         ))}
       </div>
       <div className="mt-6 flex justify-end">
-        <button onClick={() => toast.success("Preferencias guardadas")} className="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90">
+        <button
+          onClick={() => toast.success("Preferencias guardadas")}
+          className="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+        >
           Guardar preferencias
         </button>
       </div>
@@ -188,24 +257,38 @@ function NotificacionesTab() {
 }
 
 function PreferenciasTab() {
-  const [pref, setPref] = useState({ idioma: "Español (Chile)", tema: "claro", densidad: "cómoda" });
+  const [pref, setPref] = useState({
+    idioma: "Español (Chile)",
+    tema: "claro",
+    densidad: "cómoda",
+  });
   return (
     <div>
       <h3 className="font-semibold">Preferencias del sistema</h3>
       <div className="mt-4 grid max-w-md gap-4">
         <div>
-          <label className="text-sm font-medium"><Globe className="mr-1.5 inline h-3.5 w-3.5" /> Idioma</label>
-          <select value={pref.idioma} onChange={(e) => setPref({ ...pref, idioma: e.target.value })}
-            className="mt-1.5 h-10 w-full rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/50">
-            <option>Español (Chile)</option><option>English</option><option>Português</option>
+          <label className="text-sm font-medium">
+            <Globe className="mr-1.5 inline h-3.5 w-3.5" /> Idioma
+          </label>
+          <select
+            value={pref.idioma}
+            onChange={(e) => setPref({ ...pref, idioma: e.target.value })}
+            className="mt-1.5 h-10 w-full rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/50"
+          >
+            <option>Español (Chile)</option>
+            <option>English</option>
+            <option>Português</option>
           </select>
         </div>
         <div>
           <label className="text-sm font-medium">Tema</label>
           <div className="mt-1.5 grid grid-cols-3 gap-2">
-            {["claro", "oscuro", "auto"].map(t => (
-              <button key={t} onClick={() => setPref({ ...pref, tema: t })}
-                className={`rounded-md border px-3 py-2 text-sm capitalize ${pref.tema === t ? "border-primary bg-primary/5 font-semibold" : "hover:bg-muted"}`}>
+            {["claro", "oscuro", "auto"].map((t) => (
+              <button
+                key={t}
+                onClick={() => setPref({ ...pref, tema: t })}
+                className={`rounded-md border px-3 py-2 text-sm capitalize ${pref.tema === t ? "border-primary bg-primary/5 font-semibold" : "hover:bg-muted"}`}
+              >
                 {t}
               </button>
             ))}
@@ -214,9 +297,12 @@ function PreferenciasTab() {
         <div>
           <label className="text-sm font-medium">Densidad de visualización</label>
           <div className="mt-1.5 grid grid-cols-3 gap-2">
-            {["compacta", "cómoda", "amplia"].map(t => (
-              <button key={t} onClick={() => setPref({ ...pref, densidad: t })}
-                className={`rounded-md border px-3 py-2 text-sm capitalize ${pref.densidad === t ? "border-primary bg-primary/5 font-semibold" : "hover:bg-muted"}`}>
+            {["compacta", "cómoda", "amplia"].map((t) => (
+              <button
+                key={t}
+                onClick={() => setPref({ ...pref, densidad: t })}
+                className={`rounded-md border px-3 py-2 text-sm capitalize ${pref.densidad === t ? "border-primary bg-primary/5 font-semibold" : "hover:bg-muted"}`}
+              >
                 {t}
               </button>
             ))}
@@ -224,7 +310,10 @@ function PreferenciasTab() {
         </div>
       </div>
       <div className="mt-6 flex justify-end">
-        <button onClick={() => toast.success("Preferencias aplicadas")} className="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90">
+        <button
+          onClick={() => toast.success("Preferencias aplicadas")}
+          className="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+        >
           Aplicar
         </button>
       </div>
@@ -232,17 +321,42 @@ function PreferenciasTab() {
   );
 }
 
-function Field({ label, value, onChange, type = "text", disabled }: { label: string; value: string; onChange?: (v: string) => void; type?: string; disabled?: boolean }) {
+function Field({
+  label,
+  value,
+  onChange,
+  type = "text",
+  disabled,
+}: {
+  label: string;
+  value: string;
+  onChange?: (v: string) => void;
+  type?: string;
+  disabled?: boolean;
+}) {
   return (
     <label className="block">
       <span className="text-sm font-medium">{label}</span>
-      <input type={type} value={value} disabled={disabled} onChange={(e) => onChange?.(e.target.value)}
-        className="mt-1.5 h-10 w-full rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/50 disabled:bg-muted disabled:text-muted-foreground" />
+      <input
+        type={type}
+        value={value}
+        disabled={disabled}
+        onChange={(e) => onChange?.(e.target.value)}
+        className="mt-1.5 h-10 w-full rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/50 disabled:bg-muted disabled:text-muted-foreground"
+      />
     </label>
   );
 }
 
-function Toggle({ label, value, onChange }: { label: string; value: boolean; onChange: (v: boolean) => void }) {
+function Toggle({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: boolean;
+  onChange: (v: boolean) => void;
+}) {
   return (
     <div className="flex items-center justify-between py-3">
       <span className="text-sm">{label}</span>
@@ -251,7 +365,9 @@ function Toggle({ label, value, onChange }: { label: string; value: boolean; onC
         className={`relative h-6 w-11 rounded-full transition-colors ${value ? "bg-primary" : "bg-muted"}`}
         aria-pressed={value}
       >
-        <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${value ? "translate-x-5" : "translate-x-0.5"}`} />
+        <span
+          className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${value ? "translate-x-5" : "translate-x-0.5"}`}
+        />
       </button>
     </div>
   );

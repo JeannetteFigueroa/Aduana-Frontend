@@ -2,7 +2,16 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { AdminLayout, StatusBadge } from "@/components/admin-layout";
 import { viajeros, type Viajero } from "@/lib/mock-data";
-import { Search, Camera, Fingerprint, FileText, Car, CheckCircle2, XCircle, ArrowRight } from "lucide-react";
+import {
+  Search,
+  Camera,
+  Fingerprint,
+  FileText,
+  Car,
+  CheckCircle2,
+  XCircle,
+  ArrowRight,
+} from "lucide-react";
 
 export const Route = createFileRoute("/admin/viajero")({
   head: () => ({ meta: [{ title: "Procesamiento de viajero" }] }),
@@ -13,27 +22,41 @@ function ProcesamientoViajero() {
   const [selected, setSelected] = useState<Viajero>(viajeros[0]);
 
   return (
-    <AdminLayout title="Procesamiento del viajero" subtitle="Verificación de identidad, documentación y vehículo">
+    <AdminLayout
+      title="Procesamiento del viajero"
+      subtitle="Verificación de identidad, documentación y vehículo"
+    >
       <div className="grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
         <aside className="rounded-xl border bg-card shadow-sm">
           <div className="border-b p-3">
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <input placeholder="Buscar viajero o patente" className="h-9 w-full rounded-md border bg-background pl-8 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring/50" />
+              <input
+                placeholder="Buscar viajero o patente"
+                className="h-9 w-full rounded-md border bg-background pl-8 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring/50"
+              />
             </div>
           </div>
           <ul className="max-h-[70vh] divide-y overflow-y-auto">
             {viajeros.map((v) => (
               <li key={v.id}>
-                <button onClick={() => setSelected(v)}
-                  className={`flex w-full items-center gap-3 p-3 text-left hover:bg-muted/40 ${selected.id === v.id ? "bg-primary/5" : ""}`}>
-                  <img src={v.foto} className="h-10 w-10 shrink-0 rounded-full object-cover" alt="" />
+                <button
+                  onClick={() => setSelected(v)}
+                  className={`flex w-full items-center gap-3 p-3 text-left hover:bg-muted/40 ${selected.id === v.id ? "bg-primary/5" : ""}`}
+                >
+                  <img
+                    src={v.foto}
+                    className="h-10 w-10 shrink-0 rounded-full object-cover"
+                    alt=""
+                  />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
                       <span className="truncate text-sm font-medium">{v.nombre}</span>
                       <span className="shrink-0 text-[11px] text-muted-foreground">{v.hora}</span>
                     </div>
-                    <div className="truncate text-xs text-muted-foreground">{v.documento} · {v.patente}</div>
+                    <div className="truncate text-xs text-muted-foreground">
+                      {v.documento} · {v.patente}
+                    </div>
                   </div>
                 </button>
               </li>
@@ -45,7 +68,11 @@ function ProcesamientoViajero() {
           {/* Header info */}
           <div className="rounded-xl border bg-card p-5 shadow-sm">
             <div className="grid gap-5 md:grid-cols-[120px_minmax(0,1fr)_auto] md:items-center">
-              <img src={selected.foto} alt="" className="h-28 w-28 rounded-lg border object-cover" />
+              <img
+                src={selected.foto}
+                alt=""
+                className="h-28 w-28 rounded-lg border object-cover"
+              />
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <h2 className="text-xl font-bold">{selected.nombre}</h2>
@@ -53,10 +80,22 @@ function ProcesamientoViajero() {
                   <StatusBadge status={selected.riesgo} />
                 </div>
                 <div className="mt-2 grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
-                  <div><span className="text-muted-foreground">Documento:</span> <span className="font-medium">{selected.documento}</span></div>
-                  <div><span className="text-muted-foreground">Nacionalidad:</span> <span className="font-medium">{selected.nacionalidad}</span></div>
-                  <div><span className="text-muted-foreground">Origen:</span> <span className="font-medium">{selected.origen}</span></div>
-                  <div><span className="text-muted-foreground">Destino:</span> <span className="font-medium">{selected.destino}</span></div>
+                  <div>
+                    <span className="text-muted-foreground">Documento:</span>{" "}
+                    <span className="font-medium">{selected.documento}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Nacionalidad:</span>{" "}
+                    <span className="font-medium">{selected.nacionalidad}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Origen:</span>{" "}
+                    <span className="font-medium">{selected.origen}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Destino:</span>{" "}
+                    <span className="font-medium">{selected.destino}</span>
+                  </div>
                 </div>
               </div>
               <div className="flex gap-2 md:flex-col">
@@ -102,11 +141,17 @@ function ProcesamientoViajero() {
             <ol className="grid gap-3 sm:grid-cols-5">
               {["Identidad", "Documentos", "Vehículo", "Declaración", "Cruce"].map((s, i) => (
                 <li key={s} className="flex items-center gap-2">
-                  <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-full text-xs font-bold ${i < 3 ? "bg-success text-success-foreground" : i === 3 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+                  <span
+                    className={`grid h-8 w-8 shrink-0 place-items-center rounded-full text-xs font-bold ${i < 3 ? "bg-success text-success-foreground" : i === 3 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+                  >
                     {i < 3 ? "✓" : i + 1}
                   </span>
-                  <span className={`text-sm ${i <= 3 ? "font-medium" : "text-muted-foreground"}`}>{s}</span>
-                  {i < 4 && <ArrowRight className="ml-auto h-3.5 w-3.5 text-muted-foreground sm:hidden" />}
+                  <span className={`text-sm ${i <= 3 ? "font-medium" : "text-muted-foreground"}`}>
+                    {s}
+                  </span>
+                  {i < 4 && (
+                    <ArrowRight className="ml-auto h-3.5 w-3.5 text-muted-foreground sm:hidden" />
+                  )}
                 </li>
               ))}
             </ol>

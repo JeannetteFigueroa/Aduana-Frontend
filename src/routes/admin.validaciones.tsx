@@ -14,11 +14,18 @@ function Validaciones() {
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-4">
           <div className="rounded-xl border bg-card p-5 shadow-sm">
-            <h3 className="font-semibold">Resultado de validaciones — VJ-001 Juan Pérez González</h3>
-            <p className="text-sm text-muted-foreground">Consolidado de respuestas de cada organismo</p>
+            <h3 className="font-semibold">
+              Resultado de validaciones — VJ-001 Juan Pérez González
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Consolidado de respuestas de cada organismo
+            </p>
             <div className="mt-4 space-y-3">
-              {validaciones.map(v => (
-                <div key={v.entidad} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 rounded-lg border bg-background p-4">
+              {validaciones.map((v) => (
+                <div
+                  key={v.entidad}
+                  className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 rounded-lg border bg-background p-4"
+                >
                   <div className="grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-success/10 text-success">
                     <CheckCircle2 className="h-6 w-6" />
                   </div>
@@ -43,13 +50,13 @@ function Validaciones() {
             </div>
             <ol className="relative space-y-4 border-l-2 border-border pl-5">
               {[
-                ["08:42:01","Consulta enviada a PDI"],
-                ["08:42:03","Respuesta PDI: Identidad confirmada"],
-                ["08:42:04","Consulta enviada a SAG"],
-                ["08:42:06","Respuesta SAG: Sin restricciones"],
-                ["08:42:07","Consulta enviada a Aduanas"],
-                ["08:42:09","Respuesta Aduanas: Declaración aprobada"],
-                ["08:42:10","Resultado final: AUTORIZADO PARA CRUZAR"],
+                ["08:42:01", "Consulta enviada a PDI"],
+                ["08:42:03", "Respuesta PDI: Identidad confirmada"],
+                ["08:42:04", "Consulta enviada a SAG"],
+                ["08:42:06", "Respuesta SAG: Sin restricciones"],
+                ["08:42:07", "Consulta enviada a Aduanas"],
+                ["08:42:09", "Respuesta Aduanas: Declaración aprobada"],
+                ["08:42:10", "Resultado final: AUTORIZADO PARA CRUZAR"],
               ].map(([h, t], i) => (
                 <li key={i} className="relative">
                   <span className="absolute -left-[27px] top-1.5 h-3 w-3 rounded-full bg-primary ring-4 ring-card" />

@@ -1,7 +1,19 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
-  LayoutDashboard, Users, Leaf, ShieldCheck, FileBadge, Bell, BarChart3,
-  Settings, LogOut, Menu, X, Bell as BellIcon, Search, ScanLine,
+  LayoutDashboard,
+  Users,
+  Leaf,
+  ShieldCheck,
+  FileBadge,
+  Bell,
+  BarChart3,
+  Settings,
+  LogOut,
+  Menu,
+  X,
+  Bell as BellIcon,
+  Search,
+  ScanLine,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
@@ -25,7 +37,15 @@ const nav = [
   { to: "/admin/reportes", label: "Reportes", icon: BarChart3 },
 ];
 
-export function AdminLayout({ children, title, subtitle }: { children: ReactNode; title: string; subtitle?: string }) {
+export function AdminLayout({
+  children,
+  title,
+  subtitle,
+}: {
+  children: ReactNode;
+  title: string;
+  subtitle?: string;
+}) {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
@@ -51,12 +71,16 @@ export function AdminLayout({ children, title, subtitle }: { children: ReactNode
   return (
     <div className="flex min-h-screen bg-background">
       {/* Sidebar */}
-      <aside className={cn(
-        "fixed inset-y-0 left-0 z-40 w-64 bg-sidebar text-sidebar-foreground transition-transform lg:static lg:translate-x-0",
-        open ? "translate-x-0" : "-translate-x-full",
-      )}>
+      <aside
+        className={cn(
+          "fixed inset-y-0 left-0 z-40 w-64 bg-sidebar text-sidebar-foreground transition-transform lg:static lg:translate-x-0",
+          open ? "translate-x-0" : "-translate-x-full",
+        )}
+      >
         <div className="flex h-16 items-center gap-2 border-b border-sidebar-border px-5">
-          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground font-bold">A</div>
+          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground font-bold">
+            A
+          </div>
           <div className="min-w-0">
             <div className="truncate text-sm font-semibold">Aduanas Chile</div>
             <div className="truncate text-[11px] text-sidebar-foreground/60">Los Libertadores</div>
@@ -64,14 +88,21 @@ export function AdminLayout({ children, title, subtitle }: { children: ReactNode
         </div>
         <nav className="flex flex-col gap-1 overflow-y-auto p-3 pb-32">
           {nav.map((item) => {
-            const active = pathname === item.to || (item.to !== "/admin" && pathname.startsWith(item.to));
+            const active =
+              pathname === item.to || (item.to !== "/admin" && pathname.startsWith(item.to));
             const Icon = item.icon;
             return (
-              <Link key={item.to} to={item.to} onClick={() => setOpen(false)}
+              <Link
+                key={item.to}
+                to={item.to}
+                onClick={() => setOpen(false)}
                 className={cn(
                   "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                  active ? "bg-sidebar-primary text-sidebar-primary-foreground" : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                )}>
+                  active
+                    ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                    : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                )}
+              >
                 <Icon className="h-4 w-4 shrink-0" />
                 <span className="truncate">{item.label}</span>
               </Link>
@@ -79,27 +110,38 @@ export function AdminLayout({ children, title, subtitle }: { children: ReactNode
           })}
         </nav>
         <div className="absolute inset-x-0 bottom-0 border-t border-sidebar-border p-3">
-          <Link to="/admin/configuracion" onClick={() => setOpen(false)}
+          <Link
+            to="/admin/configuracion"
+            onClick={() => setOpen(false)}
             className={cn(
               "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
               pathname.startsWith("/admin/configuracion")
                 ? "bg-sidebar-primary text-sidebar-primary-foreground"
                 : "text-sidebar-foreground/80 hover:bg-sidebar-accent",
-            )}>
+            )}
+          >
             <Settings className="h-4 w-4" /> Configuración
           </Link>
-          <button onClick={cerrarSesion} className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-sidebar-foreground/80 hover:bg-sidebar-accent">
+          <button
+            onClick={cerrarSesion}
+            className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-sidebar-foreground/80 hover:bg-sidebar-accent"
+          >
             <LogOut className="h-4 w-4" /> Cerrar sesión
           </button>
         </div>
       </aside>
 
-      {open && <div onClick={() => setOpen(false)} className="fixed inset-0 z-30 bg-black/40 lg:hidden" />}
+      {open && (
+        <div onClick={() => setOpen(false)} className="fixed inset-0 z-30 bg-black/40 lg:hidden" />
+      )}
 
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Topbar */}
         <header className="sticky top-0 z-20 grid h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-b bg-card px-4 sm:px-6">
-          <button onClick={() => setOpen(!open)} className="rounded-md p-2 hover:bg-muted lg:hidden">
+          <button
+            onClick={() => setOpen(!open)}
+            className="rounded-md p-2 hover:bg-muted lg:hidden"
+          >
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
           <div className="min-w-0">
@@ -109,13 +151,19 @@ export function AdminLayout({ children, title, subtitle }: { children: ReactNode
           <div className="flex items-center gap-2 sm:gap-3">
             <div className="relative hidden md:block">
               <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <input placeholder="Buscar viajero, patente, ID..." className="h-9 w-64 rounded-md border bg-background pl-8 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring/50" />
+              <input
+                placeholder="Buscar viajero, patente, ID..."
+                className="h-9 w-64 rounded-md border bg-background pl-8 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring/50"
+              />
             </div>
             <button className="relative rounded-md p-2 hover:bg-muted">
               <BellIcon className="h-5 w-5" />
               <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-destructive" />
             </button>
-            <Link to="/admin/configuracion" className="flex items-center gap-2 rounded-md border bg-background px-2 py-1 hover:bg-muted">
+            <Link
+              to="/admin/configuracion"
+              className="flex items-center gap-2 rounded-md border bg-background px-2 py-1 hover:bg-muted"
+            >
               <img src={session.avatar} alt="" className="h-7 w-7 rounded-full" />
               <div className="hidden text-xs sm:block">
                 <div className="font-medium leading-tight">{session.nombre}</div>
@@ -147,7 +195,12 @@ export function StatusBadge({ status }: { status: string }) {
     alto: "bg-destructive/15 text-destructive border-destructive/30",
   };
   return (
-    <span className={cn("inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize", map[status] ?? "bg-muted text-foreground")}>
+    <span
+      className={cn(
+        "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize",
+        map[status] ?? "bg-muted text-foreground",
+      )}
+    >
       {status}
     </span>
   );
