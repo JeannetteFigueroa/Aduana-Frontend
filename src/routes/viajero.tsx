@@ -1608,7 +1608,8 @@ function VehiculoPanel() {
 function PermisoPanel({ session }: { session: Session }) {
   type Permiso = { codigo: string; vehiculo: string; emitido: string; vence: string };
   // Por ahora no se emite ningún permiso (no hay backend) — se muestra el estado vacío.
-  const permiso: Permiso | null = null;
+  // @backend  reemplazar por useQuery → GET /api/viajeros/{id}/permiso
+  const [permiso] = useState<Permiso | null>(null);
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
