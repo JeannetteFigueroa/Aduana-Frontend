@@ -1591,13 +1591,9 @@ function VehiculoPanel() {
         <dl className="mt-3 space-y-2 text-sm">
           <Row k="Patente" v={form.patente} />
           <Row k="Vehículo" v={`${form.marca} ${form.modelo}`} />
-          <Row k="Color" v={form.color} />
-          <Row k="Seguro" v="Vigente ✓" />
-          <Row k="Permiso circulación" v="Vigente al 31-12-2026" />
+          <Row k="Color" v={form.color || "—"} />
+          <Row k="Seguro" v={form.seguro || "—"} />
         </dl>
-        <div className="mt-4 rounded-md bg-success/10 p-3 text-xs text-success">
-          ✓ Patente sin alertas en lista nacional.
-        </div>
       </Card>
     </div>
   );
