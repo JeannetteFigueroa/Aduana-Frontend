@@ -1138,109 +1138,154 @@ function Badge({ estado }: { estado: string }) {
   );
 }
 
-/* ====================== VALIDACIÓN FACIAL (simulación) ====================== */
+/* ====================== VALIDACIÓN FACIAL (cámara real + simulación de match) ====================== */
 /**
- * @backend  Esta pantalla debe integrarse con un microservicio de biometría:
- *           POST /api/biometria/captura  (imagen del rostro en base64)
- *           → devuelve { match: boolean, score: number, vivienciaOk: boolean }
- *           Se compara contra la foto del carnet o pasaporte previamente subido.
+ * Validación facial — única pantalla que mantiene la SIMULACIÓN del match
+ * porque no usaremos un servicio real de biometría en este proyecto.
  *
- *           En producción usar getUserMedia() para abrir la cámara real.
- *           Aquí solo simulamos el flujo: capturando → analizando → resultado.
+ * - Cámara FRONTAL del dispositivo (`facingMode: 'user'`).
+ * - Tras "analizar", el resultado (score) es simulado localmente.
+ *
+ * @backend  (Si en el futuro se integra biometría real:)
+ *   POST /api/biometria/captura  { imagenBase64 }
+ *   → { match: boolean, score: number, vivienciaOk: boolean }
  */
 function BiometriaPanel() {
-  type Estado = "inicial" | "capturando" | "analizando" | "ok" | "fallo";
+  type Estado = "inicial" | "camara" | "analizando" | "ok" | "fallo";
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const [estado, setEstado] = useState<Estado>("inicial");
   const [score, setScore] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const iniciar = () => {
-    setEstado("capturando");
+  const stopCamera = () => {
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+  };
+
+  const abrirCamara = async () => {
+    setError(null);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user" },
+        audio: false,
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+      }
+      setEstado("camara");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "No fue posible acceder a la cámara frontal.";
+      setError(msg);
+      toast.error("Cámara no disponible", { description: msg });
+    }
+  };
+
+  const capturarYAnalizar = () => {
+    setEstado("analizando");
+    toast.loading("Analizando rostro...", { id: "bio" });
+    // 🎬 SIMULACIÓN del match — se mantiene a propósito (no hay servicio biométrico real).
     setTimeout(() => {
-      setEstado("analizando");
-      toast.loading("Analizando rostro contra documento de identidad...", { id: "bio" });
-      setTimeout(() => {
-        const s = Math.floor(95 + Math.random() * 5);
-        setScore(s);
-        setEstado("ok");
-        toast.success(`Validación facial exitosa — ${s}% match`, {
-          id: "bio",
-          description: "Tu identidad ha sido confirmada.",
-        });
-      }, 2200);
-    }, 2000);
+      const s = Math.floor(95 + Math.random() * 5);
+      setScore(s);
+      setEstado("ok");
+      stopCamera();
+      toast.success(`Validación facial exitosa — ${s}% match`, {
+        id: "bio",
+        description: "Tu identidad ha sido confirmada (simulación).",
+      });
+    }, 1800);
   };
 
   const reintentar = () => {
+    stopCamera();
     setEstado("inicial");
     setScore(null);
+    setError(null);
   };
+
+  useEffect(() => stopCamera, []);
 
   return (
     <div>
       <SectionTitle
         title="Validación facial"
-        sub="Verificamos que seas la misma persona del documento subido."
+        sub="Cámara frontal · el resultado del match es simulado en esta versión."
       />
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
         <Card>
-          <div className="relative mx-auto aspect-square w-full max-w-md overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-            {/* Marco circular */}
-            <div className="absolute inset-8 rounded-full border-4 border-dashed border-white/30" />
-            {(estado === "capturando" || estado === "analizando") && (
-              <div className="absolute inset-8 animate-pulse rounded-full border-4 border-primary shadow-[0_0_40px_rgba(59,130,246,0.5)]" />
+          <div className="relative mx-auto aspect-square w-full max-w-md overflow-hidden rounded-2xl bg-slate-900">
+            <video
+              ref={videoRef}
+              playsInline
+              muted
+              className="absolute inset-0 h-full w-full object-cover"
+              style={{ transform: "scaleX(-1)" }}
+            />
+            <div className="pointer-events-none absolute inset-8 rounded-full border-4 border-dashed border-white/30" />
+            {estado === "analizando" && (
+              <div className="pointer-events-none absolute inset-8 animate-pulse rounded-full border-4 border-primary shadow-[0_0_40px_rgba(59,130,246,0.5)]" />
             )}
 
-            <div className="absolute inset-0 grid place-items-center text-center text-white">
-              {estado === "inicial" && (
+            {estado === "inicial" && (
+              <div className="absolute inset-0 grid place-items-center bg-slate-900/80 text-center text-white/70">
                 <div>
-                  <ScanFace className="mx-auto h-16 w-16 opacity-80" />
-                  <p className="mt-3 text-sm">Centra tu rostro en el círculo</p>
+                  <ScanFace className="mx-auto h-16 w-16" />
+                  <p className="mt-3 text-sm">Pulsa "Iniciar" para activar la cámara frontal</p>
                 </div>
-              )}
-              {estado === "capturando" && (
-                <div>
-                  <Camera className="mx-auto h-16 w-16 animate-pulse" />
-                  <p className="mt-3 text-sm">Capturando imagen...</p>
-                </div>
-              )}
-              {estado === "analizando" && (
-                <div>
-                  <ScanLine className="mx-auto h-16 w-16 animate-pulse text-primary" />
-                  <p className="mt-3 text-sm">Analizando coincidencia...</p>
-                </div>
-              )}
-              {estado === "ok" && (
+              </div>
+            )}
+            {estado === "ok" && (
+              <div className="absolute inset-0 grid place-items-center bg-slate-900/80 text-center text-white">
                 <div>
                   <CheckCircle2 className="mx-auto h-16 w-16 text-emerald-400" />
                   <p className="mt-3 text-lg font-bold">¡Verificación exitosa!</p>
-                  <p className="text-sm opacity-80">Match: {score}%</p>
+                  <p className="text-sm opacity-80">Match: {score}% (simulado)</p>
                 </div>
-              )}
-              {estado === "fallo" && (
+              </div>
+            )}
+            {estado === "fallo" && (
+              <div className="absolute inset-0 grid place-items-center bg-slate-900/80 text-center text-white">
                 <div>
                   <X className="mx-auto h-16 w-16 text-red-400" />
                   <p className="mt-3 text-lg font-bold">No fue posible verificar</p>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
+
+          {error && (
+            <div className="mt-3 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
+              {error}
+            </div>
+          )}
 
           <div className="mt-5 flex justify-center gap-2">
             {estado === "inicial" && (
               <button
-                onClick={iniciar}
+                onClick={abrirCamara}
                 className="inline-flex items-center gap-2 rounded-md bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
               >
                 <Camera className="h-4 w-4" /> Iniciar validación
               </button>
             )}
-            {(estado === "ok" || estado === "fallo") && (
+            {estado === "camara" && (
+              <button
+                onClick={capturarYAnalizar}
+                className="inline-flex items-center gap-2 rounded-md bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+              >
+                <ScanFace className="h-4 w-4" /> Capturar y analizar
+              </button>
+            )}
+            {(estado === "ok" || estado === "fallo" || estado === "camara") && (
               <button
                 onClick={reintentar}
                 className="rounded-md border bg-card px-5 py-2.5 text-sm font-medium hover:bg-muted"
               >
-                Repetir captura
+                Repetir
               </button>
             )}
           </div>
@@ -1253,7 +1298,7 @@ function BiometriaPanel() {
               <li>· Asegúrate de estar en un lugar bien iluminado.</li>
               <li>· Retira lentes oscuros, gorros o accesorios.</li>
               <li>· Mira directamente a la cámara.</li>
-              <li>· Mantente quieto durante la captura.</li>
+              <li>· Permite el acceso a la cámara cuando el navegador lo solicite.</li>
             </ul>
           </Card>
           <Card className="bg-info/5">
@@ -1262,8 +1307,8 @@ function BiometriaPanel() {
               <div className="text-sm">
                 <p className="font-semibold text-foreground">Tu rostro está seguro</p>
                 <p className="mt-1 text-muted-foreground">
-                  La imagen capturada se compara con tu documento y luego se descarta. No
-                  almacenamos biometría tras la verificación.
+                  En esta versión la comparación es simulada y la imagen no se envía a ningún
+                  servidor.
                 </p>
               </div>
             </div>
@@ -1273,6 +1318,7 @@ function BiometriaPanel() {
     </div>
   );
 }
+
 
 /* ====================== MENORES ====================== */
 function MenoresPanel() {
