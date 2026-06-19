@@ -1333,16 +1333,8 @@ function MenoresPanel() {
       parentesco: string;
       autorizado: boolean;
     }[]
-  >([
-    {
-      id: 1,
-      nombre: "Sofía Pérez Soto",
-      rut: "25.114.882-3",
-      fecha: "14-08-2014",
-      parentesco: "Hija",
-      autorizado: true,
-    },
-  ]);
+  >([]);
+  // @backend  GET /api/viajeros/{id}/menores  → poblar la lista al montar el componente.
   const [form, setForm] = useState({ nombre: "", rut: "", fecha: "", parentesco: "Hijo/a" });
 
   const agregar = (e: React.FormEvent) => {
