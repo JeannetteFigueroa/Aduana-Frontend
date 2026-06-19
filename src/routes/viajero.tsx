@@ -1606,13 +1606,9 @@ function VehiculoPanel() {
  *   Si no hay permiso emitido todavía, mostrar el placeholder.
  */
 function PermisoPanel({ session }: { session: Session }) {
+  type Permiso = { codigo: string; vehiculo: string; emitido: string; vence: string };
   // Por ahora no se emite ningún permiso (no hay backend) — se muestra el estado vacío.
-  const permiso: null | {
-    codigo: string;
-    vehiculo: string;
-    emitido: string;
-    vence: string;
-  } = null;
+  const permiso: Permiso | null = null;
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
