@@ -333,9 +333,10 @@ function HomePanel({ go, session }: { go: (t: Tab) => void; session: Session }) 
             </span>
           </div>
           <ol className="mt-4 space-y-3">
+            {/* @backend  GET /api/viajeros/{id}/tramite  → marcar como `done: true` cada paso completado. */}
             {[
-              ["Datos personales", true, "datos"],
-              ["Documentos cargados", true, "documentos"],
+              ["Datos personales", false, "datos"],
+              ["Documentos cargados", false, "documentos"],
               ["Validación facial", false, "biometria"],
               ["Declaración SAG", false, "declarar"],
               ["Datos vehículo", false, "vehiculo"],
@@ -371,10 +372,11 @@ function HomePanel({ go, session }: { go: (t: Tab) => void; session: Session }) 
             <Clock className="h-4 w-4 text-primary" />
             <h3 className="font-semibold">Información del paso</h3>
           </div>
+          {/* @backend  GET /api/paso/estado  → tiempo de espera, cabinas activas, clima */}
           <dl className="mt-3 space-y-2 text-sm">
-            <Row k="Tiempo espera" v="~12 min" />
-            <Row k="Cabinas activas" v="6 / 6" />
-            <Row k="Clima" v="7°C · Despejado" />
+            <Row k="Tiempo espera" v="—" />
+            <Row k="Cabinas activas" v="—" />
+            <Row k="Clima" v="—" />
             <Row k="Horario" v="24 hrs" />
           </dl>
         </Card>
