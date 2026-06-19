@@ -29,9 +29,9 @@ export const Route = createFileRoute("/")({
 /**
  * Pantalla de login con dos pestañas (Operador / Viajero).
  *
- * @backend  el handler `submit` llama a `login(...)` (en `src/lib/auth.ts`)
- *           que internamente hace POST /api/auth/login al microservicio.
- *           Mientras el microservicio no esté arriba, la llamada lanzará error.
+ * @backend   el handler `submit` llama a `login(...)` (en `src/lib/auth.ts`)
+ * que internamente hace POST /api/auth/login al microservicio.
+ * Mientras el microservicio no esté arriba, la llamada lanzará error.
  */
 function LoginPage() {
   const navigate = useNavigate();
@@ -123,6 +123,18 @@ function LoginPage() {
             </div>
           </div>
 
+          {/* 📢 CARTEL DE MANTENIMIENTO PARA VERCEL */}
+          <div className="mb-6 flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-600 dark:text-amber-500">
+            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
+            <div className="space-y-1">
+              <p className="font-semibold">Aviso importante</p>
+              <p className="leading-relaxed">
+                Estamos en mantenimiento debido a la creación del backend, si desea probar el
+                proyecto descargue el repositorio y vea en su local hasta nuevo aviso.
+              </p>
+            </div>
+          </div>
+
           <h1 className="text-2xl font-bold">Iniciar sesión</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Selecciona tu tipo de cuenta para continuar.
@@ -195,7 +207,9 @@ function LoginPage() {
                 />
                 <button
                   type="button"
-                  onClick={() => setShowClave((v) => !v)}
+                  onClick={() => {
+                    setShowClave((v) => !v);
+                  }}
                   className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1.5 text-muted-foreground hover:bg-muted"
                   aria-label={showClave ? "Ocultar" : "Mostrar"}
                 >
