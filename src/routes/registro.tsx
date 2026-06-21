@@ -46,7 +46,7 @@ function RegistroPage() {
 
     try {
       const session = await registerViajero({
-        nombre: form.nombre,
+        nombres: form.nombre,
         email: form.email,
         rut: form.rut,
         clave: form.clave,

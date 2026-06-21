@@ -38,7 +38,8 @@ import {
   Eye,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { type Session } from "@/lib/auth";
+import { apiFetch } from "@/lib/api";
+import { changePassword, type Session } from "@/lib/auth";
 import { useAuth } from "@/lib/auth-context";
 import { ProtectedRoute } from "@/components/protected-route";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -285,9 +286,9 @@ function HomePanel({ go, session }: { go: (t: Tab) => void; session: Session }) 
           </p>
           <div className="mt-5 inline-flex items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-4 py-2 backdrop-blur">
             <MapPin className="h-4 w-4" />
-            <span className="text-sm">Mendoza, AR</span>
+            <span className="text-sm">Santiago, CL</span>
             <ArrowRight className="h-4 w-4" />
-            <span className="text-sm font-semibold">Santiago, CL</span>
+            <span className="text-sm font-semibold">Mendoza, AR</span>
           </div>
         </div>
       </div>
@@ -418,8 +419,6 @@ function ActionCard({
  * @backend  PUT /api/viajeros/{id}  con todos los datos del formulario.
  */
 function DatosPanel({ session }: { session: Session }) {
-  // Formulario en blanco — los valores se cargarán desde GET /api/viajeros/{id}
-  // y se enviarán con PUT /api/viajeros/{id}.
   const [form, setForm] = useState({
     nombres: "",
     apellidos: "",
@@ -437,7 +436,60 @@ function DatosPanel({ session }: { session: Session }) {
     contactoEmergenciaTel: "",
     motivoViaje: "",
   });
+  const [saving, setSaving] = useState(false);
   const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
+
+  const guardarDatos = async () => {
+    if (!form.rut.trim() || !form.nombres.trim() || !form.apellidos.trim()) {
+      return toast.error("Completa RUT, nombres y apellidos");
+    }
+
+    setSaving(true);
+
+    try {
+      let viajero: { id?: number; rut?: string } | null = null;
+
+      try {
+        viajero = await apiFetch<{ id: number; rut: string }>(
+          `/api/viajeros/rut/${encodeURIComponent(form.rut.trim())}`,
+        );
+      } catch {
+        viajero = null;
+      }
+
+      const payload = {
+        rut: form.rut.trim(),
+        nombres: form.nombres.trim(),
+        apellidos: form.apellidos.trim(),
+        documento: form.rut.trim(),
+        nacionalidad: form.nacionalidad,
+        origen: "Santiago, CL",
+        destino: "Mendoza, AR",
+        estado: "ACTIVO",
+        riesgo: "BAJO",
+      };
+
+      const saved = viajero?.id
+        ? await apiFetch(`/api/viajeros/${viajero.id}`, {
+            method: "PUT",
+            body: JSON.stringify(payload),
+          })
+        : await apiFetch("/api/viajeros", {
+            method: "POST",
+            body: JSON.stringify(payload),
+          });
+
+      toast.success("Datos guardados", {
+        description: saved?.id
+          ? `Viajero actualizado #${saved.id}`
+          : "Viajero creado correctamente",
+      });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "No se pudieron guardar los datos");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div>
@@ -448,9 +500,7 @@ function DatosPanel({ session }: { session: Session }) {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          toast.success("Datos guardados", {
-            description: "Se sincronizarán con tu permiso de cruce.",
-          });
+          void guardarDatos();
         }}
         className="space-y-4"
       >
@@ -579,9 +629,10 @@ function DatosPanel({ session }: { session: Session }) {
         <div className="flex justify-end">
           <button
             type="submit"
-            className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+            disabled={saving}
+            className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            <Save className="h-4 w-4" /> Guardar datos
+            <Save className="h-4 w-4" /> {saving ? "Guardando..." : "Guardar datos"}
           </button>
         </div>
       </form>
@@ -1707,6 +1758,7 @@ function PermisoPanel({ session }: { session: Session }) {
  */
 function PerfilPanel({ session }: { session: Session }) {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const [sub, setSub] = useState<"perfil" | "seguridad" | "notif" | "preferencias">("perfil");
 
   const cerrar = () => {
@@ -1726,7 +1778,10 @@ function PerfilPanel({ session }: { session: Session }) {
             className="mx-auto h-24 w-24 rounded-full border-4 border-primary/20"
           />
           <h3 className="mt-3 text-lg font-bold">{session.nombre}</h3>
-          <p className="text-sm text-muted-foreground">{session.rut ?? session.email}</p>
+          <p className="text-sm font-medium text-foreground">
+            {session.rut ?? "RUT no registrado"}
+          </p>
+          <p className="text-sm text-muted-foreground">{session.email}</p>
           <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-success/15 px-3 py-1 text-xs font-semibold text-success">
             <CheckCircle2 className="h-3.5 w-3.5" /> Identidad verificada
           </div>
@@ -1791,7 +1846,7 @@ function PerfilSub({ session }: { session: Session }) {
           value={form.nombre}
           onChange={(v) => setForm({ ...form, nombre: v })}
         />
-        <Field label="RUT" value={form.rut} disabled />
+        <Field label="RUT / DNI" value={form.rut || "No registrado"} disabled />
         <Field label="Correo electrónico" value={form.email} disabled />
         <Field
           label="Teléfono"
@@ -1817,16 +1872,29 @@ function PerfilSub({ session }: { session: Session }) {
 
 function SeguridadSub() {
   const [form, setForm] = useState({ actual: "", nueva: "", conf: "" });
+  const [saving, setSaving] = useState(false);
+
+  const cambiarPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (form.nueva.length < 8) return toast.error("Mínimo 8 caracteres");
+    if (form.nueva !== form.conf) return toast.error("Las contraseñas no coinciden");
+
+    setSaving(true);
+
+    try {
+      await changePassword(form.actual, form.nueva);
+      toast.success("Contraseña actualizada");
+      setForm({ actual: "", nueva: "", conf: "" });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "No se pudo actualizar la contraseña");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (form.nueva.length < 8) return toast.error("Mínimo 8 caracteres");
-        if (form.nueva !== form.conf) return toast.error("Las contraseñas no coinciden");
-        toast.success("Contraseña actualizada");
-        setForm({ actual: "", nueva: "", conf: "" });
-      }}
-    >
+    <form onSubmit={cambiarPassword}>
       <h3 className="font-semibold">Cambiar contraseña</h3>
       <div className="mt-4 grid max-w-md gap-4">
         <Field
@@ -1849,8 +1917,12 @@ function SeguridadSub() {
         />
       </div>
       <div className="mt-5 flex justify-end">
-        <button className="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90">
-          Actualizar contraseña
+        <button
+          type="submit"
+          disabled={saving}
+          className="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {saving ? "Actualizando..." : "Actualizar contraseña"}
         </button>
       </div>
     </form>

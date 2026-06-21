@@ -9,7 +9,7 @@
  *    POST  /api/auth/login       { email, password }  → { token, email, rol }
  *    POST  /api/auth/register    { rut, nombres, apellidos, email, password }
  *                               → { token, email, rol }
- *    GET   /api/auth/me          (Bearer JWT)         → { email, rol, nombres, apellidos }
+ *    GET   /api/auth/me          (Bearer JWT)         → { email, rol, nombres, apellidos, rut? }
  *    POST  /api/auth/change-password (Bearer JWT)
  *    GET   /api/auth/validate    (Bearer JWT)         → { valid, email }
  * ============================================================================
@@ -41,6 +41,7 @@ interface LoginResponse {
   token: string;
   email: string;
   rol: string;
+  rut?: string | null;
 }
 
 interface UserProfile {
@@ -48,12 +49,34 @@ interface UserProfile {
   rol: string;
   nombres: string;
   apellidos: string;
+  rut?: string | null;
+  dni?: string | null;
+  documento?: string | null;
 }
 
 interface RegisterResponse {
   token: string;
   email: string;
   rol: string;
+  rut?: string | null;
+}
+
+function firstDefinedValue(...values: Array<string | null | undefined>) {
+  return values.find((value) => typeof value === "string" && value.trim().length > 0)?.trim();
+}
+
+function resolveRut(
+  profile: UserProfile,
+  previousSession: Session | null,
+  requestRut?: string | null,
+) {
+  return firstDefinedValue(
+    profile.rut,
+    profile.dni,
+    profile.documento,
+    requestRut,
+    previousSession?.rut,
+  );
 }
 
 /**
@@ -72,6 +95,7 @@ export async function login(identificador: string, clave: string): Promise<Sessi
 
   setToken(response.token);
 
+  const previousSession = getSession();
   const profile = await apiFetch<UserProfile>("/api/auth/me");
 
   const session: Session = {
@@ -80,6 +104,7 @@ export async function login(identificador: string, clave: string): Promise<Sessi
     rol: profile.rol as Rol,
     nombre: `${profile.nombres} ${profile.apellidos}`,
     avatar: "https://api.dicebear.com/7.x/initials/svg?seed=" + encodeURIComponent(profile.nombres),
+    rut: resolveRut(profile, previousSession, response.rut),
   };
 
   persist(session);
@@ -92,25 +117,28 @@ export async function login(identificador: string, clave: string): Promise<Sessi
  */
 export async function registerViajero(data: {
   rut: string;
-  nombres: string;
+  nombres?: string;
+  nombre?: string;
   apellidos: string;
   email: string;
-  password: string;
+  password?: string;
+  clave?: string;
   nacionalidad?: string;
 }): Promise<Session> {
   const response = await apiFetch<RegisterResponse>("/api/auth/register", {
     method: "POST",
     body: JSON.stringify({
       rut: data.rut,
-      nombres: data.nombres,
+      nombres: data.nombres ?? data.nombre ?? "",
       apellidos: data.apellidos,
       email: data.email,
-      password: data.password,
+      password: data.password ?? data.clave ?? "",
     }),
   });
 
   setToken(response.token);
 
+  const previousSession = getSession();
   const profile = await apiFetch<UserProfile>("/api/auth/me");
 
   const session: Session = {
@@ -119,12 +147,22 @@ export async function registerViajero(data: {
     rol: profile.rol as Rol,
     nombre: `${profile.nombres} ${profile.apellidos}`,
     avatar: "https://api.dicebear.com/7.x/initials/svg?seed=" + encodeURIComponent(profile.nombres),
-    rut: data.rut,
+    rut: resolveRut(profile, previousSession, response.rut ?? data.rut),
   };
 
   persist(session);
 
   return session;
+}
+
+export async function changePassword(oldPassword: string, newPassword: string): Promise<void> {
+  await apiFetch("/api/auth/change-password", {
+    method: "POST",
+    body: JSON.stringify({
+      oldPassword,
+      newPassword,
+    }),
+  });
 }
 
 /** Lee la sesión local. El componente decide si redirigir al /login. */

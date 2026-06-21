@@ -3,7 +3,7 @@ import { useState } from "react";
 import { AdminLayout } from "@/components/admin-layout";
 import { Bell, Lock, User, Globe, Monitor, Save, LogOut } from "lucide-react";
 import { toast } from "sonner";
-import { type Session } from "@/lib/auth";
+import { changePassword, type Session } from "@/lib/auth";
 import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/admin/configuracion")({
@@ -140,18 +140,31 @@ function PerfilTab({ session }: { session: Session }) {
 
 function SeguridadTab() {
   const [form, setForm] = useState({ actual: "", nueva: "", conf: "" });
+  const [saving, setSaving] = useState(false);
+
+  const cambiarPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (form.nueva.length < 8) {
+      return toast.error("La nueva contraseña debe tener al menos 8 caracteres");
+    }
+    if (form.nueva !== form.conf) return toast.error("Las contraseñas no coinciden");
+
+    setSaving(true);
+
+    try {
+      await changePassword(form.actual, form.nueva);
+      toast.success("Contraseña actualizada");
+      setForm({ actual: "", nueva: "", conf: "" });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "No se pudo actualizar la contraseña");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (form.nueva.length < 8)
-          return toast.error("La nueva contraseña debe tener al menos 8 caracteres");
-        if (form.nueva !== form.conf) return toast.error("Las contraseñas no coinciden");
-        toast.success("Contraseña actualizada");
-        setForm({ actual: "", nueva: "", conf: "" });
-      }}
-    >
+    <form onSubmit={cambiarPassword}>
       <h3 className="font-semibold">Cambiar contraseña</h3>
       <p className="text-sm text-muted-foreground">
         Tu sesión se mantendrá activa luego del cambio.
@@ -177,29 +190,13 @@ function SeguridadTab() {
         />
       </div>
 
-      <div className="mt-6 border-t pt-5">
-        <h3 className="font-semibold">Sesiones activas</h3>
-        <ul className="mt-3 space-y-2 text-sm">
-          <li className="flex items-center justify-between rounded-md border p-3">
-            <div>
-              <div className="font-medium">Este dispositivo · Cabina 2</div>
-              <div className="text-xs text-muted-foreground">
-                Chrome · 192.168.10.45 · Hace unos minutos
-              </div>
-            </div>
-            <span className="rounded-full bg-success/15 px-2.5 py-0.5 text-xs font-semibold text-success">
-              Actual
-            </span>
-          </li>
-        </ul>
-      </div>
-
       <div className="mt-6 flex justify-end">
         <button
           type="submit"
-          className="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+          disabled={saving}
+          className="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          Actualizar contraseña
+          {saving ? "Actualizando..." : "Actualizar contraseña"}
         </button>
       </div>
     </form>
