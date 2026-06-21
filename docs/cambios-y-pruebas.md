@@ -16,6 +16,7 @@
   - `src/lib/auth.ts` soporta compatibilidad con `nombre`/`clave` y los envía al backend como `nombres`/`password`.
 
 - Corregido el RUT del viajero:
+  - `msauth` ahora incluye `rut` en `GET /api/auth/me` desde `bd_auth.usuarios`.
   - `src/lib/auth.ts` conserva el RUT desde `/api/auth/me`, respuesta de login/registro o sesión previa.
   - `src/routes/viajero.tsx` muestra el RUT en la tarjeta de cuenta.
 
