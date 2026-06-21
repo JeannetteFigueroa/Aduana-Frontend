@@ -104,11 +104,8 @@ function ProcesamientoViajero() {
                 </div>
               </div>
               <div className="mt-5 rounded-lg border border-dashed bg-muted/20 p-4 text-center text-xs text-muted-foreground">
-                Las verificaciones (documentos, biometría, vehículo, antecedentes) se cargarán
-                desde{" "}
-                <span className="font-mono">
-                  GET /api/viajeros/{selected.id}/verificaciones
-                </span>
+                Las verificaciones (documentos, biometría, vehículo, antecedentes) se cargarán desde{" "}
+                <span className="font-mono">GET /api/viajeros/{selected.id}/verificaciones</span>
               </div>
             </div>
           )}

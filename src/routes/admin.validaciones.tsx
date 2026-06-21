@@ -63,9 +63,7 @@ function Validaciones() {
           </div>
           <h3 className="mt-3 text-lg font-bold">Evaluación de riesgo</h3>
           <div className="mt-1 text-4xl font-extrabold text-muted-foreground">—</div>
-          <div className="mt-1 text-xs text-muted-foreground">
-            Disponible al validar un viajero
-          </div>
+          <div className="mt-1 text-xs text-muted-foreground">Disponible al validar un viajero</div>
         </aside>
       </div>
     </AdminLayout>

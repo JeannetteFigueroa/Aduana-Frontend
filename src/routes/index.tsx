@@ -33,6 +33,7 @@ export const Route = createFileRoute("/")({
  * que internamente hace POST /api/auth/login al microservicio.
  * Mientras el microservicio no esté arriba, la llamada lanzará error.
  */
+
 function LoginPage() {
   const navigate = useNavigate();
   const [tipo, setTipo] = useState<"admin" | "viajero">("viajero");
@@ -45,7 +46,7 @@ function LoginPage() {
   // Si ya hay sesión activa, redirige automáticamente
   useEffect(() => {
     const s = getSession();
-    if (s) navigate({ to: s.rol === "admin" ? "/admin" : "/viajero" });
+    if (s) navigate({ to: s.rol === "ADMIN" ? "/admin" : "/viajero" });
   }, [navigate]);
 
   const submit = async (e: React.FormEvent) => {
@@ -61,11 +62,11 @@ function LoginPage() {
     setLoading(true);
     try {
       const session = await login(usuario, clave);
-      if (tipo === "admin" && session.rol !== "admin") {
+      if (tipo === "admin" && session.rol !== "ADMIN") {
         setError("Esta cuenta no tiene permisos de operador");
         return;
       }
-      navigate({ to: session.rol === "admin" ? "/admin" : "/viajero" });
+      navigate({ to: session.rol === "ADMIN" ? "/admin" : "/viajero" });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al iniciar sesión");
     } finally {
