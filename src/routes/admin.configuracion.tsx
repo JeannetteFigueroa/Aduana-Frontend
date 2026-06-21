@@ -1,9 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { AdminLayout } from "@/components/admin-layout";
 import { Bell, Lock, User, Globe, Monitor, Save, LogOut } from "lucide-react";
 import { toast } from "sonner";
-import { getSession, logout, type Session } from "@/lib/auth";
+import { type Session } from "@/lib/auth";
+import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/admin/configuracion")({
   head: () => ({ meta: [{ title: "Configuración de la cuenta" }] }),
@@ -20,22 +21,13 @@ export const Route = createFileRoute("/admin/configuracion")({
  */
 function Configuracion() {
   const navigate = useNavigate();
-  const [session, setSession] = useState<Session | null>(null);
+  const { session, logout: logoutAuth } = useAuth();
   const [tab, setTab] = useState<"perfil" | "seguridad" | "notif" | "preferencias">("perfil");
-
-  useEffect(() => {
-    const s = getSession();
-    if (!s) {
-      navigate({ to: "/" });
-      return;
-    }
-    setSession(s);
-  }, [navigate]);
 
   if (!session) return null;
 
   const cerrarSesion = () => {
-    logout();
+    logoutAuth();
     toast.success("Sesión cerrada");
     navigate({ to: "/" });
   };

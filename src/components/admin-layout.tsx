@@ -15,9 +15,11 @@ import {
   Search,
   ScanLine,
 } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
-import { getSession, logout, type Session } from "@/lib/auth";
+import { type Session } from "@/lib/auth";
+import { useAuth } from "@/lib/auth-context";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 /**
  * Layout principal del panel del operador.
@@ -47,26 +49,18 @@ export function AdminLayout({
   subtitle?: string;
 }) {
   const navigate = useNavigate();
+  const { session, logout: logoutAuth } = useAuth();
   const [open, setOpen] = useState(false);
-  const [session, setSession] = useState<Session | null>(null);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
-  // Guard de sesión — si no hay usuario, vuelve al login
-  useEffect(() => {
-    const s = getSession();
-    if (!s || s.rol !== "admin") {
-      navigate({ to: "/" });
-      return;
-    }
-    setSession(s);
-  }, [navigate]);
-
   const cerrarSesion = () => {
-    logout();
+    logoutAuth();
     navigate({ to: "/" });
   };
 
-  if (!session) return null;
+  if (!session) {
+    return <div className="flex min-h-screen items-center justify-center">Cargando...</div>;
+  }
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -81,10 +75,11 @@ export function AdminLayout({
           <div className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground font-bold">
             A
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <div className="truncate text-sm font-semibold">Aduanas Chile</div>
             <div className="truncate text-[11px] text-sidebar-foreground/60">Los Libertadores</div>
           </div>
+          <ThemeToggle className="text-sidebar-foreground hover:bg-sidebar-accent" />
         </div>
         <nav className="flex flex-col gap-1 overflow-y-auto p-3 pb-32">
           {nav.map((item) => {
@@ -149,6 +144,7 @@ export function AdminLayout({
             {subtitle && <p className="truncate text-xs text-muted-foreground">{subtitle}</p>}
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
+            <ThemeToggle />
             <div className="relative hidden md:block">
               <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input

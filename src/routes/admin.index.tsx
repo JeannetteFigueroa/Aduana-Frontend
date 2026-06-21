@@ -1,12 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AdminLayout } from "@/components/admin-layout";
-import {
-  Users,
-  Car,
-  FileCheck,
-  AlertTriangle,
-  Inbox,
-} from "lucide-react";
+import { Users, Car, FileCheck, AlertTriangle, Inbox } from "lucide-react";
 
 export const Route = createFileRoute("/admin/")({
   head: () => ({ meta: [{ title: "Dashboard — Aduanas Los Libertadores" }] }),
@@ -39,19 +33,14 @@ function Dashboard() {
   ];
 
   return (
-    <AdminLayout
-      title="Dashboard operador"
-      subtitle="Resumen operativo del paso fronterizo"
-    >
+    <AdminLayout title="Dashboard operador" subtitle="Resumen operativo del paso fronterizo">
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {kpis.map((k) => (
           <div key={k.label} className="rounded-xl border bg-card p-5 shadow-sm">
             <div className={`grid h-10 w-10 place-items-center rounded-lg ${k.accent}`}>
               <k.icon className="h-5 w-5" />
             </div>
-            <div className="mt-4 text-3xl font-bold tracking-tight text-muted-foreground">
-              —
-            </div>
+            <div className="mt-4 text-3xl font-bold tracking-tight text-muted-foreground">—</div>
             <div className="text-sm text-muted-foreground">{k.label}</div>
           </div>
         ))}
@@ -63,10 +52,7 @@ function Dashboard() {
           title="Flujo de cruces por hora"
           hint="GET /api/reportes/flujo-horario"
         />
-        <EmptyPanel
-          title="Distribución por nacionalidad"
-          hint="GET /api/reportes/nacionalidad"
-        />
+        <EmptyPanel title="Distribución por nacionalidad" hint="GET /api/reportes/nacionalidad" />
       </div>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-3">

@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Mountain, ArrowLeft, AlertCircle, CheckCircle2 } from "lucide-react";
 import { registerViajero } from "@/lib/auth";
+import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/registro")({
   head: () => ({ meta: [{ title: "Registro de viajero — Los Libertadores" }] }),
@@ -17,6 +18,7 @@ export const Route = createFileRoute("/registro")({
  */
 function RegistroPage() {
   const navigate = useNavigate();
+  const { setSession, logout } = useAuth();
   const [form, setForm] = useState({
     nombre: "",
     email: "",
@@ -33,7 +35,7 @@ function RegistroPage() {
 
   const set = (k: keyof typeof form, v: string | boolean) => setForm((f) => ({ ...f, [k]: v }));
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
@@ -43,7 +45,7 @@ function RegistroPage() {
     if (!form.acepta) return setError("Debes aceptar los términos y condiciones");
 
     try {
-      registerViajero({
+      const session = await registerViajero({
         nombre: form.nombre,
         email: form.email,
         rut: form.rut,
@@ -52,9 +54,11 @@ function RegistroPage() {
         nacionalidad: form.nacionalidad,
         fechaNacimiento: form.fechaNacimiento,
       });
+      setSession(session);
       setOk(true);
-      setTimeout(() => navigate({ to: "/viajero" }), 1200);
+      navigate({ to: "/viajero" });
     } catch (err) {
+      logout();
       setError(err instanceof Error ? err.message : "Error al crear cuenta");
     }
   };

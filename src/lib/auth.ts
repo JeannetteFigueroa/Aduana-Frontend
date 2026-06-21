@@ -98,19 +98,16 @@ export async function registerViajero(data: {
   password: string;
   nacionalidad?: string;
 }): Promise<Session> {
-  const response = await apiFetch<RegisterResponse>(
-    "/api/auth/register",
-    {
-      method: "POST",
-      body: JSON.stringify({
-        rut: data.rut,
-        nombres: data.nombres,
-        apellidos: data.apellidos,
-        email: data.email,
-        password: data.password,
-      }),
-    },
-  );
+  const response = await apiFetch<RegisterResponse>("/api/auth/register", {
+    method: "POST",
+    body: JSON.stringify({
+      rut: data.rut,
+      nombres: data.nombres,
+      apellidos: data.apellidos,
+      email: data.email,
+      password: data.password,
+    }),
+  });
 
   setToken(response.token);
 

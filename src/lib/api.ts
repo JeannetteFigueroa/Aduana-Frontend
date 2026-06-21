@@ -16,7 +16,7 @@
  * ============================================================================
  */
 
-export const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
+export const API_BASE = (import.meta.env.VITE_API_URL ?? "http://localhost:8080").trim();
 
 const TOKEN_KEY = "los_libertadores_token";
 
@@ -44,7 +44,7 @@ export async function apiFetch<T = unknown>(path: string, init: RequestInit = {}
   };
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  const res = await fetch(`${API_BASE}${path}`, { ...init, headers });
+  const res = await fetch(`${API_BASE}${path.trim()}`, { ...init, headers });
   const text = await res.text();
   const data = text ? (JSON.parse(text) as unknown) : undefined;
 

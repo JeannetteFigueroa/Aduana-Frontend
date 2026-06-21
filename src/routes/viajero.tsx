@@ -38,11 +38,18 @@ import {
   Eye,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getSession, logout, type Session } from "@/lib/auth";
+import { type Session } from "@/lib/auth";
+import { useAuth } from "@/lib/auth-context";
+import { ProtectedRoute } from "@/components/protected-route";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export const Route = createFileRoute("/viajero")({
   head: () => ({ meta: [{ title: "Portal Viajero — Aduanas Chile" }] }),
-  component: AppViajero,
+  component: () => (
+    <ProtectedRoute requiredRole="VIAJERO">
+      <AppViajero />
+    </ProtectedRoute>
+  ),
 });
 
 type Tab =
@@ -76,19 +83,9 @@ const navItems: { id: Tab; label: string; icon: ComponentType<{ className?: stri
  */
 function AppViajero() {
   const navigate = useNavigate();
+  const { session, logout } = useAuth();
   const [tab, setTab] = useState<Tab>("home");
   const [open, setOpen] = useState(false);
-  const [session, setSession] = useState<Session | null>(null);
-
-  // Guard de sesión — exige viajero logueado
-  useEffect(() => {
-    const s = getSession();
-    if (!s || s.rol !== "viajero") {
-      navigate({ to: "/" });
-      return;
-    }
-    setSession(s);
-  }, [navigate]);
 
   if (!session) return null;
 
@@ -110,10 +107,11 @@ function AppViajero() {
           <div className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
             <Mountain className="h-5 w-5" />
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <div className="truncate text-sm font-semibold">Portal Viajero</div>
             <div className="truncate text-[11px] text-sidebar-foreground/60">Los Libertadores</div>
           </div>
+          <ThemeToggle className="text-sidebar-foreground hover:bg-sidebar-accent" />
         </div>
         <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
           {navItems.map(({ id, label, icon: Icon }) => {
@@ -165,6 +163,7 @@ function AppViajero() {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             <button className="relative rounded-md p-2 hover:bg-muted">
               <Bell className="h-5 w-5" />
               <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-destructive" />
@@ -1322,7 +1321,6 @@ function BiometriaPanel() {
     </div>
   );
 }
-
 
 /* ====================== MENORES ====================== */
 function MenoresPanel() {

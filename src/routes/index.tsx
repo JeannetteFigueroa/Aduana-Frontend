@@ -11,7 +11,9 @@ import {
   EyeOff,
   AlertCircle,
 } from "lucide-react";
-import { login, getSession } from "@/lib/auth";
+import { login } from "@/lib/auth";
+import { useAuth } from "@/lib/auth-context";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -36,6 +38,7 @@ export const Route = createFileRoute("/")({
 
 function LoginPage() {
   const navigate = useNavigate();
+  const { session, setSession, isLoading, isAuthenticated, logout } = useAuth();
   const [tipo, setTipo] = useState<"admin" | "viajero">("viajero");
   const [usuario, setUsuario] = useState("");
   const [clave, setClave] = useState("");
@@ -43,17 +46,16 @@ function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Si ya hay sesión activa, redirige automáticamente
   useEffect(() => {
-    const s = getSession();
-    if (s) navigate({ to: s.rol === "ADMIN" ? "/admin" : "/viajero" });
-  }, [navigate]);
+    if (!isLoading && isAuthenticated) {
+      navigate({ to: session?.rol === "ADMIN" ? "/admin" : "/viajero", replace: true });
+    }
+  }, [isAuthenticated, isLoading, navigate, session]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    // Validación de dominio según el rol seleccionado (regla de negocio)
     if (tipo === "admin" && !usuario.toLowerCase().endsWith("@aduana.cl")) {
       setError("Los operadores deben ingresar con un correo @aduana.cl");
       return;
@@ -62,22 +64,31 @@ function LoginPage() {
     setLoading(true);
     try {
       const session = await login(usuario, clave);
+
       if (tipo === "admin" && session.rol !== "ADMIN") {
+        logout();
         setError("Esta cuenta no tiene permisos de operador");
         return;
       }
-      navigate({ to: session.rol === "ADMIN" ? "/admin" : "/viajero" });
+
+      setSession(session);
     } catch (err) {
+      logout();
       setError(err instanceof Error ? err.message : "Error al iniciar sesión");
     } finally {
       setLoading(false);
     }
   };
 
+  if (isLoading) {
+    return <div className="flex min-h-screen items-center justify-center">Cargando...</div>;
+  }
+
   return (
     <div className="grid min-h-screen lg:grid-cols-[1.1fr_1fr]">
       {/* Panel izquierdo institucional */}
       <div className="relative hidden gradient-hero text-white lg:flex lg:flex-col lg:justify-between lg:p-12">
+        <ThemeToggle className="absolute right-6 top-6 text-white hover:bg-white/10 hover:text-white" />
         <div className="flex items-center gap-3">
           <div className="grid h-12 w-12 place-items-center rounded-lg bg-white/15 backdrop-blur">
             <Mountain className="h-6 w-6" />
@@ -114,14 +125,17 @@ function LoginPage() {
       {/* Formulario */}
       <div className="flex items-center justify-center bg-background p-6 sm:p-12">
         <div className="w-full max-w-md">
-          <div className="mb-8 flex items-center gap-3 lg:hidden">
-            <div className="grid h-10 w-10 place-items-center rounded-lg bg-primary text-primary-foreground">
-              <Mountain className="h-5 w-5" />
+          <div className="mb-8 flex items-center justify-between gap-3 lg:hidden">
+            <div className="flex items-center gap-3">
+              <div className="grid h-10 w-10 place-items-center rounded-lg bg-primary text-primary-foreground">
+                <Mountain className="h-5 w-5" />
+              </div>
+              <div>
+                <div className="text-sm font-semibold">Sistema Integrado</div>
+                <div className="text-xs text-muted-foreground">Los Libertadores</div>
+              </div>
             </div>
-            <div>
-              <div className="text-sm font-semibold">Sistema Integrado</div>
-              <div className="text-xs text-muted-foreground">Los Libertadores</div>
-            </div>
+            <ThemeToggle />
           </div>
 
           {/* 📢 CARTEL DE MANTENIMIENTO PARA VERCEL */}
