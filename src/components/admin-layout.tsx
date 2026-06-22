@@ -14,6 +14,7 @@ import {
   Bell as BellIcon,
   Search,
   ScanLine,
+  Car,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
@@ -31,6 +32,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 const nav = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { to: "/admin/viajero", label: "Procesamiento viajero", icon: Users },
+  { to: "/admin/vehiculos", label: "Vehículos", icon: Car },
   { to: "/admin/scan", label: "Escanear QR", icon: ScanLine },
   { to: "/admin/declaracion", label: "Declaración SAG", icon: Leaf },
   { to: "/admin/validaciones", label: "Validaciones", icon: ShieldCheck },

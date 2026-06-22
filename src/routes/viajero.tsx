@@ -41,6 +41,7 @@ import { cn } from "@/lib/utils";
 import { apiFetch } from "@/lib/api";
 import { changePassword, type Session } from "@/lib/auth";
 import { useAuth } from "@/lib/auth-context";
+import { crearVehiculo, type Vehiculo, autorizarPasoVehiculo, listarVehiculos, buscarVehiculoPorPatente } from "@/lib/vehiculos";
 import { ProtectedRoute } from "@/components/protected-route";
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -1524,37 +1525,67 @@ function MenoresPanel() {
 
 /* ====================== VEHÍCULO ====================== */
 function VehiculoPanel() {
-  // @backend  GET /api/viajeros/{id}/vehiculo  → precargar este formulario.
   const [form, setForm] = useState({
     patente: "",
     marca: "",
     modelo: "",
     color: "",
-    chasis: "",
-    seguro: "",
+    anio: 2020,
+    rutDuenio: "",
+    nombreDuenio: "",
   });
+  const [loading, setLoading] = useState(false);
+  const [vehiculoGuardado, setVehiculoGuardado] = useState<Vehiculo | null>(null);
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.loading("Verificando datos del vehículo...", { id: "veh" });
-    setTimeout(() => {
+    setLoading(true);
+    try {
+      const v = await crearVehiculo(form);
+      setVehiculoGuardado(v);
       toast.success("Vehículo registrado", {
-        id: "veh",
-        description: `Patente ${form.patente} validada con Registro Civil.`,
+        description: `Patente ${v.patente} guardada correctamente.`,
       });
-    }, 1400);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Error al registrar vehículo");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const aprobar = () =>
-    toast.success("Cruce APROBADO ✓", {
-      description: "Permiso emitido. Diríjase a cabina 2.",
-      duration: 6000,
-    });
-  const rechazar = () =>
-    toast.error("Cruce RECHAZADO", {
-      description: "Documentación incompleta. Acuda a oficina de atención.",
-      duration: 6000,
-    });
+  const buscar = async () => {
+    if (!form.patente) return;
+    try {
+      const v = await buscarVehiculoPorPatente(form.patente);
+      setVehiculoGuardado(v);
+      setForm({
+        ...form,
+        patente: v.patente,
+        marca: v.marca,
+        modelo: v.modelo,
+        color: v.color,
+        anio: v.anio,
+        rutDuenio: v.rutDuenio,
+        nombreDuenio: v.nombreDuenio,
+      });
+      toast.success("Vehículo encontrado");
+    } catch {
+      toast.error("Vehículo no encontrado");
+    }
+  };
+
+  const autorizar = async () => {
+    if (!vehiculoGuardado) return;
+    try {
+      await autorizarPasoVehiculo(vehiculoGuardado.id, true);
+      toast.success("Cruce APROBADO ✓", {
+        description: "Permiso emitido. Diríjase a cabina 2.",
+        duration: 6000,
+      });
+    } catch {
+      toast.error("No se pudo autorizar el paso");
+    }
+  };
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
@@ -1569,72 +1600,59 @@ function VehiculoPanel() {
             value={form.patente}
             onChange={(v) => setForm({ ...form, patente: v })}
           />
-          <Field
-            label="Marca"
-            value={form.marca}
-            onChange={(v) => setForm({ ...form, marca: v })}
-          />
+          <Field label="Marca" value={form.marca} onChange={(v) => setForm({ ...form, marca: v })} />
           <Field
             label="Modelo"
             value={form.modelo}
             onChange={(v) => setForm({ ...form, modelo: v })}
           />
+          <Field label="Color" value={form.color} onChange={(v) => setForm({ ...form, color: v })} />
           <Field
-            label="Color"
-            value={form.color}
-            onChange={(v) => setForm({ ...form, color: v })}
+            label="Año"
+            type="number"
+            value={form.anio.toString()}
+            onChange={(v) => setForm({ ...form, anio: parseInt(v) || 2020 })}
           />
           <Field
-            label="N° Chasis / VIN"
-            value={form.chasis}
-            onChange={(v) => setForm({ ...form, chasis: v })}
+            label="RUT Dueño"
+            value={form.rutDuenio}
+            onChange={(v) => setForm({ ...form, rutDuenio: v })}
           />
           <Field
-            label="Compañía de seguro"
-            value={form.seguro}
-            onChange={(v) => setForm({ ...form, seguro: v })}
+            label="Nombre Dueño"
+            value={form.nombreDuenio}
+            onChange={(v) => setForm({ ...form, nombreDuenio: v })}
           />
-
-          <div className="sm:col-span-2 rounded-lg border border-dashed bg-muted/30 p-4">
-            <div className="flex items-center gap-3">
-              <Camera className="h-5 w-5 text-muted-foreground" />
-              <div className="min-w-0 flex-1">
-                <div className="text-sm font-medium">Foto de la patente</div>
-                <div className="text-xs text-muted-foreground">JPG o PNG, hasta 5 MB</div>
-              </div>
-              <button
-                type="button"
-                onClick={() => toast.success("Foto cargada")}
-                className="rounded-md border bg-card px-3 py-1.5 text-xs font-medium hover:bg-muted"
-              >
-                Adjuntar
-              </button>
-            </div>
-          </div>
-
-          <div className="sm:col-span-2 flex flex-wrap justify-end gap-2">
+          <div className="sm:col-span-2 flex gap-2">
             <button
               type="button"
-              onClick={rechazar}
-              className="rounded-md border border-destructive/30 bg-destructive/5 px-5 py-2.5 text-sm font-medium text-destructive hover:bg-destructive/10"
+              onClick={buscar}
+              className="rounded-md border bg-card px-4 py-2 text-sm font-medium hover:bg-muted"
             >
-              Simular rechazo
-            </button>
-            <button
-              type="button"
-              onClick={aprobar}
-              className="rounded-md border border-success/30 bg-success/10 px-5 py-2.5 text-sm font-medium text-success hover:bg-success/15"
-            >
-              Simular aprobación
+              Buscar por patente
             </button>
             <button
               type="submit"
-              className="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+              disabled={loading}
+              className="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
-              Guardar y validar
+              {loading ? "Guardando..." : "Guardar vehículo"}
             </button>
           </div>
         </form>
+        {vehiculoGuardado && (
+          <div className="mt-4 rounded-lg border border-dashed bg-success/5 p-4">
+            <div className="font-medium">Estado: {vehiculoGuardado.estado}</div>
+            {vehiculoGuardado.estado === "PENDIENTE" && (
+              <button
+                onClick={autorizar}
+                className="mt-2 rounded-md bg-success px-4 py-2 text-sm font-medium text-success-foreground hover:bg-success/90"
+              >
+                Autorizar paso
+              </button>
+            )}
+          </div>
+        )}
       </Card>
 
       <Card>
@@ -1643,7 +1661,7 @@ function VehiculoPanel() {
           <Row k="Patente" v={form.patente} />
           <Row k="Vehículo" v={`${form.marca} ${form.modelo}`} />
           <Row k="Color" v={form.color || "—"} />
-          <Row k="Seguro" v={form.seguro || "—"} />
+          <Row k="Estado" v={vehiculoGuardado?.estado || "—"} />
         </dl>
       </Card>
     </div>

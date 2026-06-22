@@ -15,6 +15,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminViajeroRouteImport } from './routes/admin.viajero'
+import { Route as AdminVehiculosRouteImport } from './routes/admin.vehiculos'
 import { Route as AdminValidacionesRouteImport } from './routes/admin.validaciones'
 import { Route as AdminScanRouteImport } from './routes/admin.scan'
 import { Route as AdminReportesRouteImport } from './routes/admin.reportes'
@@ -51,6 +52,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
 const AdminViajeroRoute = AdminViajeroRouteImport.update({
   id: '/viajero',
   path: '/viajero',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminVehiculosRoute = AdminVehiculosRouteImport.update({
+  id: '/vehiculos',
+  path: '/vehiculos',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminValidacionesRoute = AdminValidacionesRouteImport.update({
@@ -101,6 +107,7 @@ export interface FileRoutesByFullPath {
   '/admin/reportes': typeof AdminReportesRoute
   '/admin/scan': typeof AdminScanRoute
   '/admin/validaciones': typeof AdminValidacionesRoute
+  '/admin/vehiculos': typeof AdminVehiculosRoute
   '/admin/viajero': typeof AdminViajeroRoute
   '/admin/': typeof AdminIndexRoute
 }
@@ -115,6 +122,7 @@ export interface FileRoutesByTo {
   '/admin/reportes': typeof AdminReportesRoute
   '/admin/scan': typeof AdminScanRoute
   '/admin/validaciones': typeof AdminValidacionesRoute
+  '/admin/vehiculos': typeof AdminVehiculosRoute
   '/admin/viajero': typeof AdminViajeroRoute
   '/admin': typeof AdminIndexRoute
 }
@@ -131,6 +139,7 @@ export interface FileRoutesById {
   '/admin/reportes': typeof AdminReportesRoute
   '/admin/scan': typeof AdminScanRoute
   '/admin/validaciones': typeof AdminValidacionesRoute
+  '/admin/vehiculos': typeof AdminVehiculosRoute
   '/admin/viajero': typeof AdminViajeroRoute
   '/admin/': typeof AdminIndexRoute
 }
@@ -148,6 +157,7 @@ export interface FileRouteTypes {
     | '/admin/reportes'
     | '/admin/scan'
     | '/admin/validaciones'
+    | '/admin/vehiculos'
     | '/admin/viajero'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
@@ -162,6 +172,7 @@ export interface FileRouteTypes {
     | '/admin/reportes'
     | '/admin/scan'
     | '/admin/validaciones'
+    | '/admin/vehiculos'
     | '/admin/viajero'
     | '/admin'
   id:
@@ -177,6 +188,7 @@ export interface FileRouteTypes {
     | '/admin/reportes'
     | '/admin/scan'
     | '/admin/validaciones'
+    | '/admin/vehiculos'
     | '/admin/viajero'
     | '/admin/'
   fileRoutesById: FileRoutesById
@@ -230,6 +242,13 @@ declare module '@tanstack/react-router' {
       path: '/viajero'
       fullPath: '/admin/viajero'
       preLoaderRoute: typeof AdminViajeroRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/vehiculos': {
+      id: '/admin/vehiculos'
+      path: '/vehiculos'
+      fullPath: '/admin/vehiculos'
+      preLoaderRoute: typeof AdminVehiculosRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/validaciones': {
@@ -292,6 +311,7 @@ interface AdminRouteChildren {
   AdminReportesRoute: typeof AdminReportesRoute
   AdminScanRoute: typeof AdminScanRoute
   AdminValidacionesRoute: typeof AdminValidacionesRoute
+  AdminVehiculosRoute: typeof AdminVehiculosRoute
   AdminViajeroRoute: typeof AdminViajeroRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
@@ -304,6 +324,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminReportesRoute: AdminReportesRoute,
   AdminScanRoute: AdminScanRoute,
   AdminValidacionesRoute: AdminValidacionesRoute,
+  AdminVehiculosRoute: AdminVehiculosRoute,
   AdminViajeroRoute: AdminViajeroRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
