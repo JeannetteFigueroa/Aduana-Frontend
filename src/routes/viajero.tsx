@@ -44,6 +44,7 @@ import { useAuth } from "@/lib/auth-context";
 import { crearVehiculo, type Vehiculo, autorizarPasoVehiculo, listarVehiculos, buscarVehiculoPorPatente } from "@/lib/vehiculos";
 import { ProtectedRoute } from "@/components/protected-route";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/viajero")({
   head: () => ({ meta: [{ title: "Portal Viajero — Aduanas Chile" }] }),
