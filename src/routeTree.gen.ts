@@ -21,6 +21,7 @@ import { Route as AdminScanRouteImport } from './routes/admin.scan'
 import { Route as AdminReportesRouteImport } from './routes/admin.reportes'
 import { Route as AdminPermisosRouteImport } from './routes/admin.permisos'
 import { Route as AdminDeclaracionRouteImport } from './routes/admin.declaracion'
+import { Route as AdminCrearFuncionarioRouteImport } from './routes/admin.crear-funcionario'
 import { Route as AdminConfiguracionRouteImport } from './routes/admin.configuracion'
 import { Route as AdminAlertasRouteImport } from './routes/admin.alertas'
 
@@ -84,6 +85,11 @@ const AdminDeclaracionRoute = AdminDeclaracionRouteImport.update({
   path: '/declaracion',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminCrearFuncionarioRoute = AdminCrearFuncionarioRouteImport.update({
+  id: '/crear-funcionario',
+  path: '/crear-funcionario',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminConfiguracionRoute = AdminConfiguracionRouteImport.update({
   id: '/configuracion',
   path: '/configuracion',
@@ -102,6 +108,7 @@ export interface FileRoutesByFullPath {
   '/viajero': typeof ViajeroRoute
   '/admin/alertas': typeof AdminAlertasRoute
   '/admin/configuracion': typeof AdminConfiguracionRoute
+  '/admin/crear-funcionario': typeof AdminCrearFuncionarioRoute
   '/admin/declaracion': typeof AdminDeclaracionRoute
   '/admin/permisos': typeof AdminPermisosRoute
   '/admin/reportes': typeof AdminReportesRoute
@@ -117,6 +124,7 @@ export interface FileRoutesByTo {
   '/viajero': typeof ViajeroRoute
   '/admin/alertas': typeof AdminAlertasRoute
   '/admin/configuracion': typeof AdminConfiguracionRoute
+  '/admin/crear-funcionario': typeof AdminCrearFuncionarioRoute
   '/admin/declaracion': typeof AdminDeclaracionRoute
   '/admin/permisos': typeof AdminPermisosRoute
   '/admin/reportes': typeof AdminReportesRoute
@@ -134,6 +142,7 @@ export interface FileRoutesById {
   '/viajero': typeof ViajeroRoute
   '/admin/alertas': typeof AdminAlertasRoute
   '/admin/configuracion': typeof AdminConfiguracionRoute
+  '/admin/crear-funcionario': typeof AdminCrearFuncionarioRoute
   '/admin/declaracion': typeof AdminDeclaracionRoute
   '/admin/permisos': typeof AdminPermisosRoute
   '/admin/reportes': typeof AdminReportesRoute
@@ -152,6 +161,7 @@ export interface FileRouteTypes {
     | '/viajero'
     | '/admin/alertas'
     | '/admin/configuracion'
+    | '/admin/crear-funcionario'
     | '/admin/declaracion'
     | '/admin/permisos'
     | '/admin/reportes'
@@ -167,6 +177,7 @@ export interface FileRouteTypes {
     | '/viajero'
     | '/admin/alertas'
     | '/admin/configuracion'
+    | '/admin/crear-funcionario'
     | '/admin/declaracion'
     | '/admin/permisos'
     | '/admin/reportes'
@@ -183,6 +194,7 @@ export interface FileRouteTypes {
     | '/viajero'
     | '/admin/alertas'
     | '/admin/configuracion'
+    | '/admin/crear-funcionario'
     | '/admin/declaracion'
     | '/admin/permisos'
     | '/admin/reportes'
@@ -286,6 +298,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminDeclaracionRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/crear-funcionario': {
+      id: '/admin/crear-funcionario'
+      path: '/crear-funcionario'
+      fullPath: '/admin/crear-funcionario'
+      preLoaderRoute: typeof AdminCrearFuncionarioRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/configuracion': {
       id: '/admin/configuracion'
       path: '/configuracion'
@@ -306,6 +325,7 @@ declare module '@tanstack/react-router' {
 interface AdminRouteChildren {
   AdminAlertasRoute: typeof AdminAlertasRoute
   AdminConfiguracionRoute: typeof AdminConfiguracionRoute
+  AdminCrearFuncionarioRoute: typeof AdminCrearFuncionarioRoute
   AdminDeclaracionRoute: typeof AdminDeclaracionRoute
   AdminPermisosRoute: typeof AdminPermisosRoute
   AdminReportesRoute: typeof AdminReportesRoute
@@ -319,6 +339,7 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAlertasRoute: AdminAlertasRoute,
   AdminConfiguracionRoute: AdminConfiguracionRoute,
+  AdminCrearFuncionarioRoute: AdminCrearFuncionarioRoute,
   AdminDeclaracionRoute: AdminDeclaracionRoute,
   AdminPermisosRoute: AdminPermisosRoute,
   AdminReportesRoute: AdminReportesRoute,

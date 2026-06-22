@@ -263,9 +263,12 @@ function PreferenciasTab() {
   );
 
   useEffect(() => {
-    if (pref.tema === "auto") {
-      const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      document.documentElement.classList.toggle("dark", isDark);
+    if (pref.tema === "oscuro") {
+      document.documentElement.classList.add("dark");
+    } else if (pref.tema === "claro") {
+      document.documentElement.classList.remove("dark");
+    } else if (pref.tema === "auto") {
+      document.documentElement.classList.remove("dark");
     }
   }, [pref.tema]);
 

@@ -37,7 +37,7 @@ import {
   Save,
   Eye,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { AdminLayout, StatusBadge } from "@/components/admin-layout";
 import { apiFetch } from "@/lib/api";
 import { changePassword, type Session } from "@/lib/auth";
 import { useAuth } from "@/lib/auth-context";
@@ -1531,20 +1531,20 @@ function VehiculoPanel() {
     modelo: "",
     color: "",
     anio: 2020,
-    rutDuenio: "",
-    nombreDuenio: "",
   });
   const [loading, setLoading] = useState(false);
-  const [vehiculoGuardado, setVehiculoGuardado] = useState<Vehiculo | null>(null);
+  const [estado, setEstado] = useState<"pendiente" | "validado" | "rechazado">("pendiente");
+  const [guardado, setGuardado] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const v = await crearVehiculo(form);
-      setVehiculoGuardado(v);
+      await crearVehiculo({ ...form, rutDuenio: "viajero-registrado", nombreDuenio: "viajero-registrado" });
+      setGuardado(true);
+      setEstado("pendiente");
       toast.success("Vehículo registrado", {
-        description: `Patente ${v.patente} guardada correctamente.`,
+        description: "En espera de validación por el operador.",
       });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Error al registrar vehículo");
@@ -1553,116 +1553,70 @@ function VehiculoPanel() {
     }
   };
 
-  const buscar = async () => {
-    if (!form.patente) return;
-    try {
-      const v = await buscarVehiculoPorPatente(form.patente);
-      setVehiculoGuardado(v);
-      setForm({
-        ...form,
-        patente: v.patente,
-        marca: v.marca,
-        modelo: v.modelo,
-        color: v.color,
-        anio: v.anio,
-        rutDuenio: v.rutDuenio,
-        nombreDuenio: v.nombreDuenio,
-      });
-      toast.success("Vehículo encontrado");
-    } catch {
-      toast.error("Vehículo no encontrado");
-    }
-  };
-
-  const autorizar = async () => {
-    if (!vehiculoGuardado) return;
-    try {
-      await autorizarPasoVehiculo(vehiculoGuardado.id, true);
-      toast.success("Cruce APROBADO ✓", {
-        description: "Permiso emitido. Diríjase a cabina 2.",
-        duration: 6000,
-      });
-    } catch {
-      toast.error("No se pudo autorizar el paso");
-    }
-  };
-
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
       <Card>
         <SectionTitle
           title="Datos del vehículo"
-          sub="Información necesaria para autorizar el cruce vehicular."
+          sub="Regístra el vehículo con el que realizarás el cruce."
         />
         <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2">
           <Field
             label="Patente *"
             value={form.patente}
             onChange={(v) => setForm({ ...form, patente: v })}
+            disabled={guardado}
           />
-          <Field label="Marca" value={form.marca} onChange={(v) => setForm({ ...form, marca: v })} />
+          <Field
+            label="Marca"
+            value={form.marca}
+            onChange={(v) => setForm({ ...form, marca: v })}
+            disabled={guardado}
+          />
           <Field
             label="Modelo"
             value={form.modelo}
             onChange={(v) => setForm({ ...form, modelo: v })}
+            disabled={guardado}
           />
-          <Field label="Color" value={form.color} onChange={(v) => setForm({ ...form, color: v })} />
+          <Field
+            label="Color"
+            value={form.color}
+            onChange={(v) => setForm({ ...form, color: v })}
+            disabled={guardado}
+          />
           <Field
             label="Año"
             type="number"
             value={form.anio.toString()}
             onChange={(v) => setForm({ ...form, anio: parseInt(v) || 2020 })}
+            disabled={guardado}
           />
-          <Field
-            label="RUT Dueño"
-            value={form.rutDuenio}
-            onChange={(v) => setForm({ ...form, rutDuenio: v })}
-          />
-          <Field
-            label="Nombre Dueño"
-            value={form.nombreDuenio}
-            onChange={(v) => setForm({ ...form, nombreDuenio: v })}
-          />
-          <div className="sm:col-span-2 flex gap-2">
-            <button
-              type="button"
-              onClick={buscar}
-              className="rounded-md border bg-card px-4 py-2 text-sm font-medium hover:bg-muted"
-            >
-              Buscar por patente
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-            >
-              {loading ? "Guardando..." : "Guardar vehículo"}
-            </button>
-          </div>
-        </form>
-        {vehiculoGuardado && (
-          <div className="mt-4 rounded-lg border border-dashed bg-success/5 p-4">
-            <div className="font-medium">Estado: {vehiculoGuardado.estado}</div>
-            {vehiculoGuardado.estado === "PENDIENTE" && (
+
+          {!guardado && (
+            <div className="sm:col-span-2 flex justify-end">
               <button
-                onClick={autorizar}
-                className="mt-2 rounded-md bg-success px-4 py-2 text-sm font-medium text-success-foreground hover:bg-success/90"
+                type="submit"
+                disabled={loading}
+                className="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
               >
-                Autorizar paso
+                {loading ? "Guardando..." : "Guardar vehículo"}
               </button>
-            )}
-          </div>
-        )}
+            </div>
+          )}
+        </form>
       </Card>
 
       <Card>
-        <h4 className="font-semibold">Resumen</h4>
-        <dl className="mt-3 space-y-2 text-sm">
-          <Row k="Patente" v={form.patente} />
-          <Row k="Vehículo" v={`${form.marca} ${form.modelo}`} />
-          <Row k="Color" v={form.color || "—"} />
-          <Row k="Estado" v={vehiculoGuardado?.estado || "—"} />
-        </dl>
+        <h4 className="font-semibold">Estado de validación</h4>
+        <div className="mt-4">
+          <StatusBadge status={estado} />
+        </div>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {estado === "pendiente" && "Tu vehículo está en espera de validación por un operador."}
+          {estado === "validado" && "Tu vehículo ha sido validado correctamente."}
+          {estado === "rechazado" && "Tu vehículo fue rechazado. Revisa los datos o acude a oficina."}
+        </p>
       </Card>
     </div>
   );

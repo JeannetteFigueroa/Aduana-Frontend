@@ -15,6 +15,7 @@ import {
   Search,
   ScanLine,
   Car,
+  UserPlus,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
@@ -39,6 +40,7 @@ const nav = [
   { to: "/admin/permisos", label: "Permisos de cruce", icon: FileBadge },
   { to: "/admin/alertas", label: "Alertas operacionales", icon: Bell },
   { to: "/admin/reportes", label: "Reportes", icon: BarChart3 },
+  { to: "/admin/funcionarios/crear", label: "Crear funcionario", icon: UserPlus },
 ];
 
 export function AdminLayout({
