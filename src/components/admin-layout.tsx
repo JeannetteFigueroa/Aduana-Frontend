@@ -40,7 +40,7 @@ const nav = [
   { to: "/admin/permisos", label: "Permisos de cruce", icon: FileBadge },
   { to: "/admin/alertas", label: "Alertas operacionales", icon: Bell },
   { to: "/admin/reportes", label: "Reportes", icon: BarChart3 },
-  { to: "/admin/funcionarios/crear", label: "Crear funcionario", icon: UserPlus },
+  { to: "/admin/crear-funcionario", label: "Crear funcionario", icon: UserPlus },
 ];
 
 export function AdminLayout({

@@ -56,18 +56,15 @@ function CrearFuncionario() {
     <AdminLayout title="Crear Funcionario" subtitle="Registro de nuevos operadores">
       <div className="max-w-2xl">
         <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2">
-          <Field
-            label="Nombres *"
-            value={form.nombres}
-            onChange={(v) => set("nombres", v)}
-          />
-          <Field
-            label="Apellidos *"
-            value={form.apellidos}
-            onChange={(v) => set("apellidos", v)}
-          />
+          <Field label="Nombres *" value={form.nombres} onChange={(v) => set("nombres", v)} />
+          <Field label="Apellidos *" value={form.apellidos} onChange={(v) => set("apellidos", v)} />
           <Field label="RUT *" value={form.rut} onChange={(v) => set("rut", v)} />
-          <Field label="Email *" type="email" value={form.email} onChange={(v) => set("email", v)} />
+          <Field
+            label="Email *"
+            type="email"
+            value={form.email}
+            onChange={(v) => set("email", v)}
+          />
           <Field label="Cargo" value={form.cargo} onChange={(v) => set("cargo", v)} />
 
           <div className="sm:col-span-2 flex justify-end">
