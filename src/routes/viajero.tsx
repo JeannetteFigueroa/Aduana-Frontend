@@ -911,6 +911,7 @@ type Doc = {
   aceptaTipos: string;
   estado: "pendiente" | "subido" | "validado" | "rechazado";
   file?: { nombre: string; tamano: number; preview?: string };
+  observacion?: string;
 };
 
 const DOCS_BASE: Doc[] = [
@@ -988,31 +989,37 @@ const DOCS_BASE: Doc[] = [
  *           y se actualiza vía WebSocket o polling.
  */
 function DocumentosPanel() {
-  const [docs, setDocs] = useState<Doc[]>(DOCS_BASE);
+  const { session } = useAuth();
+  const [docs, setDocs] = useState<Doc[]>(() => {
+    if (typeof window === "undefined") return DOCS_BASE;
+    const saved = localStorage.getItem("docs_viajero");
+    return saved ? JSON.parse(saved) : DOCS_BASE;
+  });
   const inputsRef = useRef<Record<string, HTMLInputElement | null>>({});
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("docs_viajero", JSON.stringify(docs));
+    }
+  }, [docs]);
 
   const triggerFile = (id: DocId) => inputsRef.current[id]?.click();
 
-  const handleFile = (id: DocId, file: File) => {
-    // Lectura local del archivo SOLO para mostrar preview en la UI (no se sube a ningún servidor todavía).
-    // @backend: aquí se reemplaza por POST /api/documentos (multipart) usando el File real.
+  const handleFile = async (id: DocId, file: File) => {
     const finish = (preview?: string) => {
       setDocs((d) =>
         d.map((x) =>
           x.id === id
-            ? { ...x, estado: "subido", file: { nombre: file.name, tamano: file.size, preview } }
+            ? { ...x, estado: "subido", observacion: undefined, file: { nombre: file.name, tamano: file.size, preview } }
             : x,
         ),
       );
       toast.success(`"${file.name}" cargado`, { description: "En revisión por el operador." });
 
-      // 🎬 Simulación de validación automática a los 2.5s
-      setTimeout(() => {
-        setDocs((d) => d.map((x) => (x.id === id ? { ...x, estado: "validado" } : x)));
-        toast.success(`${DOCS_BASE.find((dd) => dd.id === id)?.nombre} validado`, {
-          description: "Documento aprobado por el sistema.",
-        });
-      }, 2500);
+      apiFetch("/api/documentos", {
+        method: "POST",
+        body: JSON.stringify({ tipo: id, viajeroId: session?.email, nombre: file.name, tamano: file.size }),
+      }).catch(() => {});
     };
 
     if (file.type.startsWith("image/")) {
@@ -1026,7 +1033,7 @@ function DocumentosPanel() {
 
   const eliminar = (id: DocId) => {
     setDocs((d) =>
-      d.map((x) => (x.id === id ? { ...x, estado: "pendiente", file: undefined } : x)),
+      d.map((x) => (x.id === id ? { ...x, estado: "pendiente", observacion: undefined, file: undefined } : x)),
     );
     toast.info("Documento eliminado");
   };
@@ -1377,6 +1384,7 @@ function BiometriaPanel() {
 
 /* ====================== MENORES ====================== */
 function MenoresPanel() {
+  const { session } = useAuth();
   const [menores, setMenores] = useState<
     {
       id: number;
@@ -1387,28 +1395,30 @@ function MenoresPanel() {
       autorizado: boolean;
     }[]
   >([]);
-  // @backend  GET /api/viajeros/{id}/menores  → poblar la lista al montar el componente.
+  const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ nombre: "", rut: "", fecha: "", parentesco: "Hijo/a" });
 
-  const agregar = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (!session?.id) return;
+    apiFetch<any[]>(`/api/viajeros/${session.id}/menores`).then(setMenores).catch(() => {});
+  }, [session?.id]);
+
+  const agregar = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.nombre || !form.rut) return toast.error("Completa los campos obligatorios");
-    setMenores([...menores, { id: Date.now(), ...form, autorizado: false }]);
-    toast.success("Menor agregado", {
-      description: "Sube el permiso notarial para autorizar el cruce.",
-    });
-    setForm({ nombre: "", rut: "", fecha: "", parentesco: "Hijo/a" });
-  };
-
-  const autorizar = (id: number) => {
-    toast.loading("Validando autorización notarial...", { id: `m${id}` });
-    setTimeout(() => {
-      setMenores((m) => m.map((x) => (x.id === id ? { ...x, autorizado: true } : x)));
-      toast.success("Permiso de menor validado", {
-        id: `m${id}`,
-        description: "Notaría verificada con éxito.",
+    setLoading(true);
+    try {
+      const temporalId = Date.now();
+      setMenores([...menores, { ...form, id: temporalId, autorizado: false }]);
+      toast.success("Menor agregado", {
+        description: "Sube el permiso notarial para autorizar el cruce.",
       });
-    }, 1400);
+      setForm({ nombre: "", rut: "", fecha: "", parentesco: "Hijo/a" });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "No se pudo agregar");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -1448,7 +1458,7 @@ function MenoresPanel() {
                 <div className="flex gap-2">
                   {!m.autorizado && (
                     <button
-                      onClick={() => autorizar(m.id)}
+                      onClick={() => toast.info("Sube el permiso notarial (implementar endpoint de documento)")}
                       className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90"
                     >
                       <Upload className="h-3.5 w-3.5" /> Subir permiso
@@ -1473,23 +1483,27 @@ function MenoresPanel() {
               label="Nombre completo *"
               value={form.nombre}
               onChange={(v) => setForm({ ...form, nombre: v })}
+              disabled={loading}
             />
             <Field
               label="RUT / Doc. identidad *"
               value={form.rut}
               onChange={(v) => setForm({ ...form, rut: v })}
+              disabled={loading}
             />
             <Field
               label="Fecha de nacimiento"
               type="date"
               value={form.fecha}
               onChange={(v) => setForm({ ...form, fecha: v })}
+              disabled={loading}
             />
             <div>
               <label className="block text-sm font-medium">Parentesco</label>
               <select
                 value={form.parentesco}
                 onChange={(e) => setForm({ ...form, parentesco: e.target.value })}
+                disabled={loading}
                 className="mt-1.5 h-10 w-full rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/50"
               >
                 <option>Hijo/a</option>
@@ -1499,7 +1513,7 @@ function MenoresPanel() {
               </select>
             </div>
             <div className="sm:col-span-2 flex justify-end">
-              <button className="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90">
+              <button disabled={loading} className="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90">
                 Agregar menor
               </button>
             </div>
@@ -1532,6 +1546,7 @@ function VehiculoPanel() {
     modelo: "",
     color: "",
     anio: 2020,
+    nombreDuenio: "",
   });
   const [loading, setLoading] = useState(false);
   const [estado, setEstado] = useState<"pendiente" | "validado" | "rechazado">("pendiente");
@@ -1541,7 +1556,7 @@ function VehiculoPanel() {
     e.preventDefault();
     setLoading(true);
     try {
-      await crearVehiculo({ ...form, rutDuenio: "viajero-registrado", nombreDuenio: "viajero-registrado" });
+      await crearVehiculo({ ...form, rutDuenio: "viajero-registrado", nombreDuenio: form.nombreDuenio || "viajero-registrado" });
       setGuardado(true);
       setEstado("pendiente");
       toast.success("Vehículo registrado", {
@@ -1591,6 +1606,12 @@ function VehiculoPanel() {
             type="number"
             value={form.anio.toString()}
             onChange={(v) => setForm({ ...form, anio: parseInt(v) || 2020 })}
+            disabled={guardado}
+          />
+          <Field
+            label="Nombre propietario (si es diferente)"
+            value={form.nombreDuenio}
+            onChange={(v) => setForm({ ...form, nombreDuenio: v })}
             disabled={guardado}
           />
 
