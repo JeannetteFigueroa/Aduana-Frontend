@@ -305,7 +305,17 @@ function PreferenciasTab() {
             {["claro", "oscuro", "auto"].map((t) => (
               <button
                 key={t}
-                onClick={() => setPref({ ...pref, tema: t })}
+                onClick={() => {
+                  setPref({ ...pref, tema: t });
+                  if (t === "oscuro") {
+                    document.documentElement.classList.add("dark");
+                  } else if (t === "claro") {
+                    document.documentElement.classList.remove("dark");
+                  } else if (t === "auto") {
+                    const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+                    document.documentElement.classList.toggle("dark", isDark);
+                  }
+                }}
                 className={`rounded-md border px-3 py-2 text-sm capitalize ${pref.tema === t ? "border-primary bg-primary/5 font-semibold" : "hover:bg-muted"}`}
               >
                 {t}
