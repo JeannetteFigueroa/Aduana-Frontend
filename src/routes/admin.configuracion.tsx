@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AdminLayout } from "@/components/admin-layout";
 import { Bell, Lock, User, Globe, Monitor, Save, LogOut } from "lucide-react";
 import { toast } from "sonner";
@@ -78,10 +78,19 @@ function Configuracion() {
 }
 
 function PerfilTab({ session }: { session: Session }) {
+  const rolACargo = (rol: string) => {
+    const map: Record<string, string> = {
+      ADMIN: "Administrador",
+      FUNCIONARIO: "Funcionario",
+      VIAJERO: "Viajero",
+    };
+    return map[rol] ?? rol;
+  };
+
   const [form, setForm] = useState({
     nombre: session.nombre,
     email: session.email,
-    cargo: session.cargo ?? "",
+    cargo: session.cargo ?? rolACargo(session.rol),
     turno: session.turno ?? "",
     telefono: "+56 2 2345 6789",
   });
@@ -102,7 +111,7 @@ function PerfilTab({ session }: { session: Session }) {
         <div>
           <h3 className="text-lg font-bold">{session.nombre}</h3>
           <p className="text-sm text-muted-foreground">
-            {session.cargo} · {session.turno}
+            {session.cargo ?? rolACargo(session.rol)} · {form.turno}
           </p>
           <button type="button" className="mt-2 text-xs font-medium text-primary hover:underline">
             Cambiar foto
@@ -246,11 +255,32 @@ function NotificacionesTab() {
 }
 
 function PreferenciasTab() {
-  const [pref, setPref] = useState({
-    idioma: "Español (Chile)",
-    tema: "claro",
-    densidad: "cómoda",
-  });
+  const savedPref = localStorage.getItem("preferencias-sistema");
+  const [pref, setPref] = useState(() =>
+    savedPref
+      ? JSON.parse(savedPref)
+      : { idioma: "Español (Chile)", tema: "claro", densidad: "cómoda" },
+  );
+
+  useEffect(() => {
+    if (pref.tema === "auto") {
+      const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      document.documentElement.classList.toggle("dark", isDark);
+    }
+  }, [pref.tema]);
+
+  const aplicar = () => {
+    localStorage.setItem("preferencias-sistema", JSON.stringify(pref));
+    if (pref.tema === "oscuro") {
+      document.documentElement.classList.add("dark");
+    } else if (pref.tema === "claro") {
+      document.documentElement.classList.remove("dark");
+    } else if (pref.tema === "auto") {
+      const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      document.documentElement.classList.toggle("dark", isDark);
+    }
+    toast.success("Preferencias aplicadas");
+  };
   return (
     <div>
       <h3 className="font-semibold">Preferencias del sistema</h3>
@@ -300,7 +330,7 @@ function PreferenciasTab() {
       </div>
       <div className="mt-6 flex justify-end">
         <button
-          onClick={() => toast.success("Preferencias aplicadas")}
+          onClick={aplicar}
           className="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
         >
           Aplicar

@@ -116,25 +116,24 @@ export async function login(identificador: string, clave: string): Promise<Sessi
  * Registra un nuevo viajero contra el backend real.
  */
 export async function registerViajero(data: {
-  rut: string;
-  nombres?: string;
-  nombre?: string;
-  apellidos: string;
-  email: string;
-  password?: string;
-  clave?: string;
-  nacionalidad?: string;
-}): Promise<Session> {
-  const response = await apiFetch<RegisterResponse>("/api/auth/register", {
-    method: "POST",
-    body: JSON.stringify({
-      rut: data.rut,
-      nombres: data.nombres ?? data.nombre ?? "",
-      apellidos: data.apellidos,
-      email: data.email,
-      password: data.password ?? data.clave ?? "",
-    }),
-  });
+   rut: string;
+   nombres?: string;
+   nombre?: string;
+   apellidos: string;
+   email: string;
+   password?: string;
+   clave?: string;
+ }): Promise<Session> {
+   const response = await apiFetch<RegisterResponse>("/api/auth/register", {
+     method: "POST",
+     body: JSON.stringify({
+       rut: data.rut,
+       nombres: data.nombres ?? data.nombre ?? "",
+       apellidos: data.apellidos,
+       email: data.email,
+       password: data.password ?? data.clave ?? "",
+     }),
+   });
 
   setToken(response.token);
 

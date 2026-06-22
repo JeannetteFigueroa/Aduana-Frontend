@@ -20,12 +20,10 @@ function RegistroPage() {
   const navigate = useNavigate();
   const { setSession, logout } = useAuth();
   const [form, setForm] = useState({
-    nombre: "",
+    nombres: "",
+    apellidos: "",
     email: "",
     rut: "",
-    telefono: "",
-    nacionalidad: "Chile",
-    fechaNacimiento: "",
     clave: "",
     claveConf: "",
     acepta: false,
@@ -33,26 +31,23 @@ function RegistroPage() {
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState(false);
 
-  const set = (k: keyof typeof form, v: string | boolean) => setForm((f) => ({ ...f, [k]: v }));
+const set = (k: keyof typeof form, v: string | boolean) => setForm((f) => ({ ...f, [k]: v }));
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    // Validaciones de cliente — el backend debe replicarlas
     if (form.clave.length < 8) return setError("La contraseña debe tener al menos 8 caracteres");
     if (form.clave !== form.claveConf) return setError("Las contraseñas no coinciden");
     if (!form.acepta) return setError("Debes aceptar los términos y condiciones");
 
     try {
       const session = await registerViajero({
-        nombres: form.nombre,
+        nombres: form.nombres,
+        apellidos: form.apellidos,
         email: form.email,
         rut: form.rut,
         clave: form.clave,
-        telefono: form.telefono,
-        nacionalidad: form.nacionalidad,
-        fechaNacimiento: form.fechaNacimiento,
       });
       setSession(session);
       setOk(true);
@@ -107,9 +102,15 @@ function RegistroPage() {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field
-                  label="Nombre completo *"
-                  value={form.nombre}
-                  onChange={(v) => set("nombre", v)}
+                  label="Nombres *"
+                  value={form.nombres}
+                  onChange={(v) => set("nombres", v)}
+                  required
+                />
+                <Field
+                  label="Apellidos *"
+                  value={form.apellidos}
+                  onChange={(v) => set("apellidos", v)}
                   required
                 />
                 <Field
@@ -126,33 +127,6 @@ function RegistroPage() {
                   onChange={(v) => set("email", v)}
                   placeholder="tucorreo@mail.com"
                   required
-                />
-                <Field
-                  label="Teléfono"
-                  value={form.telefono}
-                  onChange={(v) => set("telefono", v)}
-                  placeholder="+56 9 1234 5678"
-                />
-                <div>
-                  <label className="block text-sm font-medium">Nacionalidad</label>
-                  <select
-                    value={form.nacionalidad}
-                    onChange={(e) => set("nacionalidad", e.target.value)}
-                    className="mt-1.5 h-10 w-full rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/50"
-                  >
-                    <option>Chile</option>
-                    <option>Argentina</option>
-                    <option>Perú</option>
-                    <option>Bolivia</option>
-                    <option>Brasil</option>
-                    <option>Otra</option>
-                  </select>
-                </div>
-                <Field
-                  label="Fecha de nacimiento"
-                  type="date"
-                  value={form.fechaNacimiento}
-                  onChange={(v) => set("fechaNacimiento", v)}
                 />
               </div>
 
