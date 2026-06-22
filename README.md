@@ -1,224 +1,508 @@
-# Sistema Integrado de Gestión Fronteriza – Los Libertadores
+# Sistema Aduanero Inteligente para la Optimización del Control Fronterizo
 
-## Descripción del Proyecto
+## Descripción General
 
-Este proyecto corresponde al desarrollo de un prototipo frontend para la modernización del proceso de control fronterizo en el Complejo Los Libertadores.
+El presente proyecto corresponde al desarrollo de una plataforma de gestión aduanera basada en una arquitectura de microservicios, cuyo objetivo es optimizar los procesos de control fronterizo, reducir los cuellos de botella operacionales y mejorar la gestión de información asociada a viajeros, vehículos, permisos y validaciones de ingreso al país.
 
-La solución busca centralizar y digitalizar procesos asociados a:
+La solución busca digitalizar y centralizar procesos que tradicionalmente presentan retrasos debido a la duplicidad de registros, validaciones manuales y falta de integración entre organismos involucrados en los controles fronterizos.
 
-* Control de viajeros.
-* Declaraciones SAG.
-* Validaciones y permisos.
-* Gestión de alertas.
-* Reportes operacionales.
-* Control administrativo.
+El sistema permite gestionar información de viajeros, vehículos, funcionarios, permisos y validaciones provenientes de distintos organismos, manteniendo trazabilidad y facilitando la toma de decisiones durante el proceso de fiscalización.
 
-El proyecto fue desarrollado como parte de la asignatura **Ingeniería de Software** de la carrera **Ingeniería en Informática** durante el tercer semestre.
+---
+
+# Información Académica
+
+**Institución:** Duoc UC
+
+**Carrera:** Ingeniería en Informática
+
+**Asignatura:** Ingeniería de Software
 
 **Profesor:** Federico Lohse
 
-**Integrantes:**
+## Integrantes
 
 * Jeannette Figueroa
 * Marco Carrasco
 
-**Herramientas utilizadas:**
+---
 
-* React 19
-* TypeScript
-* Vite
-* Tailwind CSS
-* TanStack Router / TanStack Start
-* ShadCN UI
+# Objetivo del Proyecto
+
+Desarrollar un sistema aduanero moderno basado en microservicios capaz de:
+
+* Reducir los tiempos de atención en pasos fronterizos.
+* Minimizar errores asociados al ingreso manual de información.
+* Centralizar los procesos de validación.
+* Facilitar la interoperabilidad entre organismos participantes.
+* Mejorar la trazabilidad de viajeros, vehículos y mercancías.
+* Reducir los cuellos de botella durante los procesos de control fronterizo.
 
 ---
 
-# Estado Actual del Proyecto
+# Arquitectura del Sistema
 
-Esta versión corresponde a un **prototipo frontend funcional**.
+La solución fue diseñada utilizando una arquitectura de microservicios basada en Spring Cloud, permitiendo desacoplar los distintos dominios de negocio y facilitando el mantenimiento, escalabilidad y evolución del sistema.
 
-Actualmente no existe conexión con backend ni bases de datos reales.
-
-Toda la información mostrada corresponde a simulaciones visuales orientadas a validar la experiencia de usuario y el diseño del sistema.
-
----
-
-# Instalación Local
-
-## Requisitos Previos
-
-* Node.js 20 o superior
-* npm o bun
-
-Verificar instalación:
-
-```bash
-node -v
-npm -v
-```
-
-## 1. Clonar o descargar el proyecto
-
-```bash
-git clone <repositorio>
-```
-
-## 2. Instalar dependencias
-
-```bash
-npm install
-```
-
-## 3. Ejecutar en modo desarrollo
-
-```bash
-npm run dev
-```
-
-Acceder a:
+## Arquitectura General
 
 ```text
-http://localhost:3000
+Frontend (React + Vite)
+          │
+          ▼
+     API Gateway
+          │
+          ▼
+    Eureka Server
+          │
+ ┌────────┼────────┐
+ │        │        │
+ ▼        ▼        ▼
+
+msauth
+msusuarios
+msviajeros
+msaduana
+mspdi
+msalertas
+mspermisos
+msreportes
+mssag
 ```
+
+### Componentes Principales
+
+#### API Gateway
+
+Punto único de entrada para todas las solicitudes realizadas desde el frontend.
+
+Responsabilidades:
+
+* Enrutamiento de solicitudes.
+* Gestión centralizada de acceso.
+* Comunicación con microservicios internos.
+* Seguridad y control de peticiones.
 
 ---
 
-# Despliegue en Vercel (Paso a Paso)
+#### Eureka Server
 
-Este proyecto está configurado para desplegarse en **Vercel** usando el preset oficial de **Nitro**.
+Servidor de descubrimiento de servicios.
 
-## Opción A: Deploy desde la CLI de Vercel
+Responsabilidades:
 
-### Paso 1: Instalar Vercel CLI
-
-```bash
-npm i -g vercel
-```
-
-### Paso 2: Login en Vercel
-
-```bash
-vercel login
-```
-
-### Paso 3: Compilar el proyecto
-
-Desde la raíz del proyecto ejecutar:
-
-```bash
-npm run build
-```
-
-Esto generará la carpeta `.vercel/output/` con todo listo para producción (función serverless + archivos estáticos).
-
-### Paso 4: Deploy
-
-```bash
-vercel --prebuilt
-```
-
-Vercel detectará automáticamente la carpeta `.vercel/output/` y publicará la aplicación.
-
----
-
-## Opción B: Deploy conectando GitHub/GitLab/Bitbucket
-
-### Paso 1: Subir el proyecto a un repositorio Git
-
-```bash
-git init
-git add .
-git commit -m "Primer commit"
-git remote add origin <URL_DEL_REPO>
-git push -u origin main
-```
-
-### Paso 2: Importar en Vercel
-
-1. Ir a [vercel.com/new](https://vercel.com/new)
-2. Seleccionar el repositorio recién creado
-3. Vercel detectará automáticamente que es un proyecto **TanStack Start + Nitro**
-4. Dejar los valores por defecto:
-   * **Framework Preset:** Detectará automáticamente Vite/Nitro
-   * **Build Command:** `npm run build`
-   * **Output Directory:** `.vercel/output` (detectado automáticamente)
-5. Clic en **Deploy**
-
-### Paso 3: Configurar variables de entorno (si aplica)
-
-Si más adelante agregas backend real (Java microservicios + MySQL), configura las URLs en:
-
-**Vercel Dashboard → Tu proyecto → Settings → Environment Variables**
-
-Ejemplo:
-
-| Variable | Valor (desarrollo) |
-|----------|-------------------|
-| `VITE_API_URL` | `http://localhost:8081/api` |
-
-> **Nota:** Las variables que empiecen con `VITE_` son accesibles desde el frontend. Las que NO lleven `VITE_` (por ejemplo `DATABASE_URL`, `JWT_SECRET`) solo estarán disponibles en el servidor y nunca llegarán al navegador.
-
----
-
-## Estructura del Build para Vercel
-
-Después de ejecutar `npm run build`, se genera:
-
-```
-.vercel/output/
-├── config.json          # Configuración de Vercel Build Output API
-├── functions/
-│   └── __server.func/   # Función serverless (SSR + API routes)
-├── static/              # Assets estáticos (JS, CSS, imágenes)
-└── nitro.json           # Metadata del build
-```
-
-No necesitas modificar nada manualmente dentro de `.vercel/output/`.
+* Registro automático de microservicios.
+* Descubrimiento dinámico de servicios.
+* Gestión de disponibilidad de instancias.
 
 ---
 
 # Tecnologías Utilizadas
 
-| Tecnología         | Uso                             |
-| ------------------ | ------------------------------- |
-| React 19           | Interfaz de usuario             |
-| TypeScript         | Tipado estático                 |
-| Vite               | Bundler y entorno de desarrollo |
-| Tailwind CSS       | Estilos                         |
-| TanStack Start     | Framework fullstack (SSR + rutas)|
-| TanStack Router    | Enrutamiento tipado             |
-| Nitro              | Motor serverless para deploy     |
-| ShadCN UI          | Componentes visuales            |
-| Recharts           | Gráficos y estadísticas         |
+## Backend
+
+* Java 21
+* Spring Boot 3
+* Spring Cloud
+* Spring Security
+* Spring Data JPA
+* Spring Cloud OpenFeign
+* Netflix Eureka
+* API Gateway
+* Maven
+* Lombok
+
+## Base de Datos
+
+* MySQL
+* XAMPP
+
+## Frontend
+
+* React
+* Vite
+* TypeScript
+* Tailwind CSS
+* Shadcn UI
+* React Router
+
+## Herramientas de Desarrollo
+
+* Git
+* GitHub
+* Postman
+* Cloudflare Tunnel
+* Vercel
 
 ---
 
-# Consideraciones para Futuras Integraciones
+# Infraestructura de Desarrollo
 
-Este proyecto corresponde a una versión de demostración académica.
+Para simplificar el despliegue durante el desarrollo académico, se decidió utilizar una infraestructura híbrida:
 
-Las futuras etapas consideran:
+## Backend
 
-* **Backend:** Arquitectura de microservicios en Java (Spring Boot)
-* **Base de datos:** MySQL (via XAMPP en desarrollo, RDS/Cloud SQL en producción)
-* **Autenticación real:** JWT o OAuth2
-* **APIs REST:** Documentación Swagger/OpenAPI
-* **Comunicación frontend-backend:** Reemplazar simulaciones (`@backend` en comentarios) por llamadas HTTP reales
+Los microservicios se ejecutan localmente utilizando Spring Boot.
 
-Los puntos de integración están marcados en el código con el comentario `// @backend` para facilitar la migración.
+La base de datos se ejecuta mediante:
+
+* XAMPP
+* MySQL
+
+## Exposición de Servicios
+
+Se utiliza Cloudflare Tunnel para exponer los servicios backend mediante URLs públicas seguras.
+
+Esto permite que el frontend desplegado pueda consumir los servicios sin necesidad de desplegar los microservios en infraestructura cloud dedicada.
+
+## Frontend
+
+El frontend se encuentra desplegado mediante:
+
+* Vercel
 
 ---
 
-# Créditos
+# Microservicios Implementados
 
-Proyecto desarrollado por:
+## msauth
 
-**Jeannette Figueroa**
+Responsable de la autenticación y autorización de usuarios.
 
-**Marco Carrasco**
+### Funcionalidades
 
-Carrera: Ingeniería en Informática
+* Inicio de sesión.
+* Gestión de usuarios.
+* Gestión de roles.
+* Control de acceso.
+* Auditoría de accesos.
 
-Asignatura: Ingeniería de Software
+### Estado
 
-Profesor: Federico Lohse
+✅ Implementado
+
+---
+
+## msusuarios
+
+Responsable de la administración de funcionarios y usuarios internos del sistema.
+
+### Funcionalidades
+
+* Registro de funcionarios.
+* Actualización de información.
+* Administración de perfiles.
+
+### Estado
+
+✅ Implementado
+
+---
+
+## msviajeros
+
+Responsable de la gestión de viajeros que ingresan o salen del país.
+
+### Funcionalidades
+
+* Registro de viajeros.
+* Gestión documental.
+* Registro de menores de edad.
+* Consulta de información asociada.
+
+### Estado
+
+✅ Implementado
+
+---
+
+## msaduana
+
+Responsable del control y administración de vehículos asociados a viajeros.
+
+### Funcionalidades
+
+* Registro de vehículos.
+* Consulta de vehículos.
+* Asociación de propietarios.
+* Control de información vehicular.
+
+### Estado
+
+✅ Implementado
+
+---
+
+## mspdi
+
+Responsable de realizar validaciones asociadas a antecedentes y controles migratorios.
+
+### Funcionalidades
+
+* Verificación de antecedentes.
+* Validación de registros.
+* Apoyo a fiscalizaciones.
+
+### Estado
+
+✅ Implementado
+
+---
+
+# Microservicios en Desarrollo
+
+## msalertas
+
+Responsable de la generación y administración de alertas operacionales.
+
+### Funcionalidades Planificadas
+
+* Alertas automáticas.
+* Notificaciones.
+* Gestión de incidencias.
+
+### Estado
+
+🚧 En desarrollo
+
+---
+
+## mspermisos
+
+Responsable de administrar permisos especiales asociados a viajeros y operaciones aduaneras.
+
+### Funcionalidades Planificadas
+
+* Permisos especiales.
+* Autorizaciones temporales.
+* Validaciones administrativas.
+
+### Estado
+
+🚧 En desarrollo
+
+---
+
+## msreportes
+
+Responsable de generar reportes operacionales y estadísticas del sistema.
+
+### Funcionalidades Planificadas
+
+* Reportes PDF.
+* Indicadores de gestión.
+* Estadísticas operacionales.
+
+### Estado
+
+🚧 En desarrollo
+
+---
+
+## mssag
+
+Responsable de las validaciones relacionadas con controles sanitarios y fitosanitarios.
+
+### Funcionalidades Planificadas
+
+* Declaraciones SAG.
+* Restricciones sanitarias.
+* Control de productos agrícolas y pecuarios.
+
+### Estado
+
+🚧 En desarrollo
+
+---
+
+# Comunicación Entre Microservicios
+
+El proyecto utiliza Spring Cloud OpenFeign para permitir la comunicación entre servicios.
+
+## Relaciones Detectadas
+
+### msviajeros → msauth
+
+Objetivo:
+
+* Validar usuarios autorizados.
+* Consultar información asociada a autenticación.
+
+---
+
+### mspdi → msaduana
+
+Objetivo:
+
+* Consultar vehículos asociados a propietarios.
+* Apoyar procesos de validación y fiscalización.
+
+---
+
+# Reglas de Negocio
+
+## Gestión de Usuarios
+
+* Solo usuarios autenticados pueden acceder al sistema.
+* Cada usuario posee un rol determinado.
+* Los permisos dependen del rol asignado.
+* Toda acción relevante debe quedar registrada.
+
+---
+
+## Gestión de Viajeros
+
+* Todo viajero debe contar con documentación válida.
+* Debe existir trazabilidad de los registros realizados.
+* Los datos deben mantenerse actualizados.
+
+---
+
+## Gestión de Vehículos
+
+* Todo vehículo debe estar asociado a un propietario.
+* La información debe ser validable desde otros organismos.
+* Debe mantenerse historial de registros.
+
+---
+
+## Validaciones PDI
+
+* Los viajeros pueden ser sometidos a validaciones de antecedentes.
+* Los vehículos pueden ser objeto de verificaciones adicionales.
+* Las observaciones deben quedar registradas.
+
+---
+
+## Controles Aduaneros
+
+* Toda información ingresada debe ser validada.
+* Debe evitarse la duplicidad de registros.
+* Los procesos deben facilitar la interoperabilidad entre organismos.
+
+---
+
+## Controles SAG
+
+* Determinados productos pueden requerir validaciones sanitarias.
+* Las restricciones deben ser verificadas antes de autorizar el ingreso.
+
+---
+
+# Estructura del Proyecto
+
+```text
+aduana-backend/
+
+├── api-gateway
+├── eureka-server
+
+├── msauth
+├── msusuarios
+├── msviajeros
+├── msaduana
+├── mspdi
+
+├── msalertas
+├── mspermisos
+├── msreportes
+├── mssag
+```
+
+---
+
+# Ejecución del Proyecto
+
+## Requisitos
+
+* Java 21
+* Maven
+* MySQL
+* XAMPP
+* Git
+
+## Pasos Generales
+
+### 1. Iniciar Base de Datos
+
+Levantar Apache y MySQL mediante XAMPP.
+
+### 2. Ejecutar Eureka Server
+
+```bash
+mvn spring-boot:run
+```
+
+### 3. Ejecutar API Gateway
+
+```bash
+mvn spring-boot:run
+```
+
+### 4. Ejecutar Microservicios
+
+```bash
+mvn spring-boot:run
+```
+
+para cada microservicio.
+
+### 5. Iniciar Cloudflare Tunnel
+
+Configurar y ejecutar Cloudflare Tunnel para exponer los servicios localmente.
+
+### 6. Ejecutar Frontend
+
+```bash
+npm install
+npm run dev
+```
+
+---
+
+# Repositorios
+
+## Frontend
+
+Repositorio:
+
+https://github.com/JeannetteFigueroa/Aduana-Frontend
+
+## Backend
+
+Repositorio:
+
+https://github.com/JeannetteFigueroa/aduana-backend
+
+---
+
+# Despliegue
+
+## Frontend (Vercel)
+
+URL:
+
+https://aduana-frontend-wheat.vercel.app/
+
+## Backend (Cloudflare Tunnel)
+
+URL Base:
+
+se debe usar el comando & "C:\Program Files (x86)\cloudflared\cloudflared.exe" tunnel --url http://localhost:8080 para acceder a la url
+
+---
+
+# Estado del Proyecto
+
+Actualmente el sistema cuenta con:
+
+* Arquitectura de microservicios implementada.
+* API Gateway operativo.
+* Eureka Server operativo.
+* Comunicación entre servicios mediante OpenFeign.
+* Frontend desplegado en Vercel.
+* Backend ejecutado localmente.
+* Base de datos MySQL mediante XAMPP.
+* Exposición de servicios mediante Cloudflare Tunnel.
+
+El proyecto continúa en desarrollo incorporando nuevos módulos y reglas de negocio asociadas al proceso aduanero.
