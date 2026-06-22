@@ -41,7 +41,13 @@ import { AdminLayout, StatusBadge } from "@/components/admin-layout";
 import { apiFetch } from "@/lib/api";
 import { changePassword, type Session } from "@/lib/auth";
 import { useAuth } from "@/lib/auth-context";
-import { crearVehiculo, type Vehiculo, autorizarPasoVehiculo, listarVehiculos, buscarVehiculoPorPatente } from "@/lib/vehiculos";
+import {
+  crearVehiculo,
+  type Vehiculo,
+  autorizarPasoVehiculo,
+  listarVehiculos,
+  buscarVehiculoPorPatente,
+} from "@/lib/vehiculos";
 import { ProtectedRoute } from "@/components/protected-route";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
@@ -1010,7 +1016,12 @@ function DocumentosPanel() {
       setDocs((d) =>
         d.map((x) =>
           x.id === id
-            ? { ...x, estado: "subido", observacion: undefined, file: { nombre: file.name, tamano: file.size, preview } }
+            ? {
+                ...x,
+                estado: "subido",
+                observacion: undefined,
+                file: { nombre: file.name, tamano: file.size, preview },
+              }
             : x,
         ),
       );
@@ -1018,7 +1029,12 @@ function DocumentosPanel() {
 
       apiFetch("/api/documentos", {
         method: "POST",
-        body: JSON.stringify({ tipo: id, viajeroId: session?.email, nombre: file.name, tamano: file.size }),
+        body: JSON.stringify({
+          tipo: id,
+          viajeroId: session?.email,
+          nombre: file.name,
+          tamano: file.size,
+        }),
       }).catch(() => {});
     };
 
@@ -1033,7 +1049,9 @@ function DocumentosPanel() {
 
   const eliminar = (id: DocId) => {
     setDocs((d) =>
-      d.map((x) => (x.id === id ? { ...x, estado: "pendiente", observacion: undefined, file: undefined } : x)),
+      d.map((x) =>
+        x.id === id ? { ...x, estado: "pendiente", observacion: undefined, file: undefined } : x,
+      ),
     );
     toast.info("Documento eliminado");
   };
@@ -1400,7 +1418,9 @@ function MenoresPanel() {
 
   useEffect(() => {
     if (!session?.id) return;
-    apiFetch<any[]>(`/api/viajeros/${session.id}/menores`).then(setMenores).catch(() => {});
+    apiFetch<any[]>(`/api/viajeros/${session.id}/menores`)
+      .then(setMenores)
+      .catch(() => {});
   }, [session?.id]);
 
   const agregar = async (e: React.FormEvent) => {
@@ -1458,7 +1478,9 @@ function MenoresPanel() {
                 <div className="flex gap-2">
                   {!m.autorizado && (
                     <button
-                      onClick={() => toast.info("Sube el permiso notarial (implementar endpoint de documento)")}
+                      onClick={() =>
+                        toast.info("Sube el permiso notarial (implementar endpoint de documento)")
+                      }
                       className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90"
                     >
                       <Upload className="h-3.5 w-3.5" /> Subir permiso
@@ -1513,7 +1535,10 @@ function MenoresPanel() {
               </select>
             </div>
             <div className="sm:col-span-2 flex justify-end">
-              <button disabled={loading} className="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90">
+              <button
+                disabled={loading}
+                className="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+              >
                 Agregar menor
               </button>
             </div>
@@ -1556,7 +1581,11 @@ function VehiculoPanel() {
     e.preventDefault();
     setLoading(true);
     try {
-      await crearVehiculo({ ...form, rutDuenio: "viajero-registrado", nombreDuenio: form.nombreDuenio || "viajero-registrado" });
+      await crearVehiculo({
+        ...form,
+        rutDuenio: "viajero-registrado",
+        nombreDuenio: form.nombreDuenio || "viajero-registrado",
+      });
       setGuardado(true);
       setEstado("pendiente");
       toast.success("Vehículo registrado", {
@@ -1637,7 +1666,8 @@ function VehiculoPanel() {
         <p className="mt-2 text-sm text-muted-foreground">
           {estado === "pendiente" && "Tu vehículo está en espera de validación por un operador."}
           {estado === "validado" && "Tu vehículo ha sido validado correctamente."}
-          {estado === "rechazado" && "Tu vehículo fue rechazado. Revisa los datos o acude a oficina."}
+          {estado === "rechazado" &&
+            "Tu vehículo fue rechazado. Revisa los datos o acude a oficina."}
         </p>
       </Card>
     </div>
