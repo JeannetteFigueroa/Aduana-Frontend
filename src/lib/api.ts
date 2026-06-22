@@ -39,28 +39,32 @@ export interface ApiError extends Error {
 }
 
 export async function apiFetch<T = unknown>(path: string, init: RequestInit = {}): Promise<T> {
-  const token = getToken();
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    ...(init.headers as Record<string, string> | undefined),
-  };
-  if (token) headers.Authorization = `Bearer ${token}`;
+   const token = getToken();
+   const headers: Record<string, string> = {
+     "Content-Type": "application/json",
+     ...(init.headers as Record<string, string> | undefined),
+   };
+   if (token) headers.Authorization = `Bearer ${token}`;
 
-  const res = await fetch(`${API_BASE}${path.trim()}`, { ...init, headers });
-  const text = await res.text();
-  const data = parseResponseBody(text, res.headers.get("content-type"));
+   const url = `${API_BASE}${path.trim()}`;
+   console.log("[apiFetch] Fetching:", url);
+   const res = await fetch(url, { ...init, headers });
+   console.log("[apiFetch] Response status:", res.status);
+   const text = await res.text();
+   console.log("[apiFetch] Response text:", text);
+   const data = parseResponseBody(text, res.headers.get("content-type"));
 
-  if (!res.ok) {
-    const err = new Error(
-      (data as { message?: string })?.message ??
-        (typeof data === "string" ? data : `Error ${res.status}`),
-    ) as ApiError;
-    err.status = res.status;
-    err.payload = data;
-    throw err;
-  }
-  return data as T;
-}
+   if (!res.ok) {
+     const err = new Error(
+       (data as { message?: string })?.message ??
+         (typeof data === "string" ? data : `Error ${res.status}`),
+     ) as ApiError;
+     err.status = res.status;
+     err.payload = data;
+     throw err;
+   }
+   return data as T;
+ }
 
 function parseResponseBody(text: string, contentType: string | null) {
   if (!text) return undefined;
