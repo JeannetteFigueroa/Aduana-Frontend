@@ -17,7 +17,7 @@ function CrearFuncionario() {
     rut: "",
     email: "",
     cargo: "",
-    rol: "FUNCIONARIO",
+    rol: "OPERADOR",
   });
   const [loading, setLoading] = useState(false);
 
