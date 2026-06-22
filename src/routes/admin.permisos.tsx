@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AdminLayout, StatusBadge } from "@/components/admin-layout";
 import { Inbox, Plus, CheckCircle2, Car, FileText, Shield, Baby } from "lucide-react";
 import { useState } from "react";
-import { listarVehiculos, type Vehiculo } from "@/lib/vehiculos";
 import { apiFetch } from "@/lib/api";
 import { toast } from "sonner";
 
@@ -33,21 +32,7 @@ function Permisos() {
       const vs = await apiFetch<ViajeroCompleto[]>("/api/viajeros?estado=cola");
       setViajeros(vs);
     } catch {
-      const vehiculos = await listarVehiculos();
-      const mock: ViajeroCompleto[] = vehiculos.map((v) => ({
-        id: v.id.toString(),
-        nombre: v.nombreDuenio,
-        rut: v.rutDuenio,
-        vehiculo: v,
-        documentos: [
-          { tipo: "Cédula", estado: "validado" },
-          { tipo: "Pasaporte", estado: "validado" },
-        ],
-        declaracionSag: { folio: "SAG-2026-08841", estado: "aprobada" },
-        validacionesPdi: [{ estado: "autorizado" }],
-        menores: [],
-      }));
-      setViajeros(mock);
+      toast.error("Error al cargar viajeros");
     } finally {
       setLoading(false);
     }
